@@ -1,0 +1,169 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : 31 janv. 2022, 13:39:47
+    Author     : jkuhn
+*/
+
+
+.planDescriptionCollapser.collapsed:after {
+	content: '+ Show More';
+}
+
+.planDescriptionCollapser:not(.collapsed):after {
+	content: '- Show Less';
+}
+
+.ticketDescriptionCollapser.collapsed:after {
+	content: '+ Show More';
+}
+
+.ticketDescriptionCollapser:not(.collapsed):after {
+	content: '- Show Less';
+}
+
+#planDescriptionCollapse {
+	min-height: 3rem;
+	overflow: auto;
+	max-height: 50vh;
+}
+
+#planSlot.expanded {
+	overflow: hidden;
+}
+
+#planSlot.expanded #planDescriptionCollapse {
+	max-height: unset;
+}
+
+#planDescriptionCollapse.collapse:not(.show) {
+	position: relative;
+	display: block;
+	height: 3rem;
+	overflow: hidden;
+}
+
+#planDescriptionCollapse.collapse:not(.show) .editable .editor {
+	display: none !important;
+}
+
+#planDescriptionCollapse.collapse:not(.show):after {
+	position: absolute;
+	bottom: 0;  
+	height: 100%;
+	width: 100%;
+	content: "";
+	background: linear-gradient(to top,
+		rgba(255,255,255, 1) 20%, 
+		rgba(255,255,255, 0) 100%
+	);
+	pointer-events: none;
+}
+
+#planDescriptionCollapse.collapsing {
+	height: 3rem;
+	overflow: hidden;
+	max-height: 50vh;
+}
+
+#ticketDescriptionCollapse {
+	min-height: 3rem;
+	overflow: auto;
+}
+
+#ticketDescriptionCollapse.collapse:not(.show) {
+	position: relative;
+	display: block;
+	height: 3rem;
+	overflow: hidden;
+}
+
+#ticketDescriptionCollapse.collapse:not(.show) .editable .editor {
+	display: none !important;
+}
+
+#ticketDescriptionCollapse.collapse:not(.show):after {
+	position: absolute;
+	bottom: 0;  
+	height: 100%;
+	width: 100%;
+	content: "";
+	background: linear-gradient(to top,
+		rgba(255,255,255, 1) 20%, 
+		rgba(255,255,255, 0) 100%
+	);
+	pointer-events: none;
+}
+
+#ticketDescriptionCollapse.collapsing {
+	height: 3rem;
+}
+
+.editable .editor {
+	display: none !important;
+}
+
+.editable:hover .editor {
+	display: inline-block !important;
+}
+
+.nav-item.editable .editor {
+	display: inline-block !important;
+	visibility: hidden;
+}
+
+.nav-item.editable:hover .editor {
+	visibility: visible;
+}
+
+#ticketListSlot .list-group-item.active {
+	background-color: #52c6ff !important;
+	border-color: #52c6ff !important;
+}
+
+.btn-add {
+    box-sizing: content-box;
+    width: 1em;
+    height: 1em;
+    padding: .25em .25em;
+    color: #000;
+	background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M 8 0 A 1 1 0 0 0 7 1 L 7 7 L 1 7 A 1 1 0 0 0 0 8 A 1 1 0 0 0 1 9 L 7 9 L 7 15 A 1 1 0 0 0 8 16 A 1 1 0 0 0 9 15 L 9 9 L 15 9 A 1 1 0 0 0 16 8 A 1 1 0 0 0 15 7 L 9 7 L 9 1 A 1 1 0 0 0 8 0 z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+    border: 0;
+    border-radius: .25rem;
+    opacity: .5;
+}
+.btn-add:hover {
+  color: #000;
+  text-decoration: none;
+  opacity: 0.75;
+}
+.btn-add:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  opacity: 1;
+}
+.btn-add:disabled, .btn-add.disabled {
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  opacity: 0.25;
+}
+
+.btn-add-white {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+#ticketListSlot .filters .btn {
+	opacity: 0.5 !important;
+}
+
+#ticketListSlot .filters .btn:hover {
+	opacity: 0.75 !important;
+}
+
+#ticketListSlot .filters .btn.selected {
+	opacity: 1 !important;
+}
