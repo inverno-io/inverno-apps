@@ -32,13 +32,12 @@ import io.lettuce.core.support.BoundedAsyncPool;
 import io.lettuce.core.support.BoundedPoolConfig;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
-import org.mockito.Mockito;
 import org.junit.jupiter.api.Assertions;
-import reactor.core.publisher.Flux;
 
 /**
  *
@@ -90,25 +89,18 @@ public class PlanServiceTest {
 	@Test
 	public void testPlanService() throws JsonProcessingException {
 		RedisTransactionalClient<String, String> client = createClient();
-		TicketService mockTicketService = Mockito.mock(TicketService.class);
-		Mockito.when(mockTicketService.getTickets(Mockito.any())).thenAnswer(i -> {
-			List<Long> ticketIds = i.<List<Long>>getArgument(0);
-			if(ticketIds == null) {
-				return Flux.empty();
-			}
-			return Flux.fromIterable(ticketIds).map(ticketId -> new Ticket(ticketId, null, null, null, null, null, null));
-		});
-		PlanService planService = new PlanService(client, MAPPER, mockTicketService);
+		TicketService ticketService = new TicketService(client, MAPPER);
+		PlanService planService = new PlanService(client, MAPPER, ticketService);
 		try {
 			ZonedDateTime planCreationDateTime = ZonedDateTime.now(ZoneOffset.UTC);
-			Plan savePlan = new Plan(null, "Test plan", "Test plan summary", "Test plan description", planCreationDateTime, null);
+			Plan savePlan = new Plan(null, "Test plan", "Test plan summary", "Test plan description", null, null);
 			Plan savedPlan = planService.savePlan(savePlan).block();
 			
 			Assertions.assertEquals(1l, savedPlan.getId());
 			Assertions.assertEquals("Test plan", savedPlan.getTitle());
 			Assertions.assertEquals("Test plan summary", savedPlan.getSummary());
 			Assertions.assertEquals("Test plan description", savedPlan.getDescription());
-			Assertions.assertTrue(planCreationDateTime.isEqual(savedPlan.getCreationDateTime()));
+			Assertions.assertTrue(ChronoUnit.SECONDS.between(planCreationDateTime, savedPlan.getCreationDateTime()) < 1);
 			
 			Plan getPlan = planService.getPlan(1).block();
 			
@@ -116,7 +108,7 @@ public class PlanServiceTest {
 			Assertions.assertEquals("Test plan", getPlan.getTitle());
 			Assertions.assertEquals("Test plan summary", getPlan.getSummary());
 			Assertions.assertEquals("Test plan description", getPlan.getDescription());
-			Assertions.assertTrue(planCreationDateTime.isEqual(getPlan.getCreationDateTime()));
+			Assertions.assertTrue(ChronoUnit.SECONDS.between(planCreationDateTime, getPlan.getCreationDateTime()) < 1);
 			
 			Plan getPlanNotExist = planService.getPlan(2).block();
 			
@@ -129,7 +121,12 @@ public class PlanServiceTest {
 			Assertions.assertEquals("Test plan", updatedPlan.getTitle());
 			Assertions.assertEquals("Test plan summary", updatedPlan.getSummary());
 			Assertions.assertEquals("Test plan updated description", updatedPlan.getDescription());
-			Assertions.assertTrue(planCreationDateTime.isEqual(updatedPlan.getCreationDateTime()));
+			Assertions.assertTrue(ChronoUnit.SECONDS.between(planCreationDateTime, updatedPlan.getCreationDateTime()) < 1);
+			
+			ticketService.saveTicket(new Ticket(null, Ticket.Type.FEATURE, Ticket.Status.OPEN, "ticket 1", "Summary 1", "Description 1", null)).block();
+			ticketService.saveTicket(new Ticket(null, Ticket.Type.FEATURE, Ticket.Status.OPEN, "ticket 2", "Summary 2", "Description 2", null)).block();
+			ticketService.saveTicket(new Ticket(null, Ticket.Type.FEATURE, Ticket.Status.OPEN, "ticket 3", "Summary 3", "Description 3", null)).block();
+			ticketService.saveTicket(new Ticket(null, Ticket.Type.FEATURE, Ticket.Status.OPEN, "ticket 4", "Summary 4", "Description 4", null)).block();
 			
 			planService.addTicket(1l, 1l).block();
 			planService.addTicket(1l, 2l).block();
@@ -163,9 +160,9 @@ public class PlanServiceTest {
 			
 			Assertions.assertEquals(2l, savedPlan2.getId());
 			Assertions.assertEquals("Test plan 2", savedPlan2.getTitle());
-			Assertions.assertEquals("Test plan 2 summary", savedPlan2.getDescription());
+			Assertions.assertEquals("Test plan 2 summary", savedPlan2.getSummary());
 			Assertions.assertEquals("Test plan 2 description", savedPlan2.getDescription());
-			Assertions.assertTrue(planCreationDateTime2.isEqual(savedPlan2.getCreationDateTime()));
+			Assertions.assertTrue(ChronoUnit.SECONDS.between(planCreationDateTime2, savedPlan2.getCreationDateTime()) < 1);
 			
 			List<Plan> listPlans = planService.listPlans().sort(Comparator.comparing(Plan::getId)).collectList().block();
 			
@@ -175,13 +172,13 @@ public class PlanServiceTest {
 			Assertions.assertEquals("Test plan", listPlans.get(0).getTitle());
 			Assertions.assertEquals("Test plan summary", listPlans.get(0).getSummary());
 			Assertions.assertEquals("Test plan updated description", listPlans.get(0).getDescription());
-			Assertions.assertTrue(planCreationDateTime.isEqual(listPlans.get(0).getCreationDateTime()));
+			Assertions.assertTrue(ChronoUnit.SECONDS.between(planCreationDateTime, listPlans.get(0).getCreationDateTime()) < 1);
 			
 			Assertions.assertEquals(2l, listPlans.get(1).getId());
 			Assertions.assertEquals("Test plan 2", listPlans.get(1).getTitle());
-			Assertions.assertEquals("Test plan 2 summary", listPlans.get(1).getDescription());
+			Assertions.assertEquals("Test plan 2 summary", listPlans.get(1).getSummary());
 			Assertions.assertEquals("Test plan 2 description", listPlans.get(1).getDescription());
-			Assertions.assertTrue(planCreationDateTime2.isEqual(listPlans.get(1).getCreationDateTime()));
+			Assertions.assertTrue(ChronoUnit.SECONDS.between(planCreationDateTime2, listPlans.get(1).getCreationDateTime()) < 1);
 			
 			planService.removePlan(1l).block();
 			
@@ -191,9 +188,9 @@ public class PlanServiceTest {
 			
 			Assertions.assertEquals(2l, listPlans.get(0).getId());
 			Assertions.assertEquals("Test plan 2", listPlans.get(0).getTitle());
-			Assertions.assertEquals("Test plan 2 summary", listPlans.get(0).getDescription());
+			Assertions.assertEquals("Test plan 2 summary", listPlans.get(0).getSummary());
 			Assertions.assertEquals("Test plan 2 description", listPlans.get(0).getDescription());
-			Assertions.assertTrue(planCreationDateTime2.isEqual(listPlans.get(0).getCreationDateTime()));
+			Assertions.assertTrue(ChronoUnit.SECONDS.between(planCreationDateTime2, listPlans.get(0).getCreationDateTime()) < 1);
 		}
 		finally {
 			client.close().block();
