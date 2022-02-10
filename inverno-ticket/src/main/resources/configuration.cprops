@@ -1,3 +1,5 @@
 io.inverno.app.ticket.ticketAppConfiguration {
-	web_root = "file:/home/jkuhn/Devel/git/winter/inverno-apps/inverno-ticket/src/main/resources/static/"
+    [ profile = "dev" ] {
+	    web_root = "file:/home/jkuhn/Devel/git/winter/inverno-apps/inverno-ticket/src/main/resources/static/"
+	}
 }

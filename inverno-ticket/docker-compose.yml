@@ -1,0 +1,18 @@
+version: '3.3'
+
+services:
+  inverno_ticket:
+    image: inverno-ticket:1.0.0-SNAPSHOT
+    volumes:
+      - logs:/opt/inverno-ticket/logs
+    ports:
+      - "8080:8080"
+    command: --io.inverno.app.ticket.ticketAppConfiguration.redis.host=\"redis\"
+  redis:
+    image: redis
+    volumes:
+      - data:/data
+
+volumes:
+  logs:
+  data:

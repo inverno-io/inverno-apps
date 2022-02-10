@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="MavenAnnotationProcessors">
+    <modules>
+      <module name="inverno-configuration-compiler" />
+      <module name="inverno-irt-compiler" />
+      <module name="inverno-web-compiler" />
+      <module name="inverno-configuration" />
+      <module name="inverno-irt" />
+      <module name="inverno-web" />
+      <module name="inverno-http-base" />
+      <module name="inverno-http-server" />
+    </modules>
+  </component>
+</module>

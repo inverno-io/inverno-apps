@@ -27,7 +27,9 @@ module io.inverno.app.ticket {
 	requires io.inverno.mod.configuration;
 	requires io.inverno.mod.web;
 	requires io.inverno.mod.redis.lettuce;
-	
+
+	requires org.apache.logging.log4j;
+
 	exports io.inverno.app.ticket.internal.model to com.fasterxml.jackson.databind;
 	exports io.inverno.app.ticket.internal.rest.v1.dto to com.fasterxml.jackson.databind;
 	

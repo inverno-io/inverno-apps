@@ -50,6 +50,11 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport-native-epoll</artifactId>
+			<classifier>linux-x86_64</classifier>
+		</dependency>
 		
 		<!-- WebJars -->
 		<dependency>
@@ -128,4 +133,75 @@
 		</pluginManagement>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>io.inverno.tool</groupId>
+						<artifactId>inverno-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>inverno-build-app</id>
+								<phase>package</phase>
+								<goals>
+									<goal>build-app</goal>
+								</goals>
+								<configuration>
+									<vm>server</vm>
+									<!-- jdk.crypto.ec: TLS, jdk.jdwp.agent: remote debug -->
+									<addModules>jdk.crypto.ec,jdk.jdwp.agent</addModules>
+									<launchers>
+										<launcher>
+											<name>inverno-ticket</name>
+											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-modules io.netty.transport.unix.common,io.netty.transport.epoll</vmOptions>
+										</launcher>
+									</launchers>
+									<formats>
+										<format>zip</format>
+									</formats>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>install-docker</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>io.inverno.tool</groupId>
+						<artifactId>inverno-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>inverno-build-image-docker</id>
+								<phase>install</phase>
+								<goals>
+									<goal>build-image-docker</goal>
+								</goals>
+								<configuration>
+									<vm>server</vm>
+									<!-- jdk.crypto.ec: TLS, jdk.jdwp.agent: remote debug -->
+									<addModules>jdk.crypto.ec</addModules>
+									<executable>inverno-ticket</executable>
+									<launchers>
+										<launcher>
+											<name>inverno-ticket</name>
+											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-modules io.netty.transport.unix.common,io.netty.transport.epoll</vmOptions>
+										</launcher>
+									</launchers>
+									<volumes>
+										<volume>/opt/inverno-ticket/logs</volume>
+									</volumes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
