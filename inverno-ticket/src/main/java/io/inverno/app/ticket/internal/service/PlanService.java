@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.inverno.app.ticket.internal;
+package io.inverno.app.ticket.internal.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inverno.app.ticket.TicketApp;
-import static io.inverno.app.ticket.internal.TicketService.REDIS_KEY_TICKET_STATUS;
+import static io.inverno.app.ticket.internal.service.TicketService.REDIS_KEY_TICKET_STATUS;
 import io.inverno.app.ticket.internal.exception.PlanAlreadyExistsException;
 import io.inverno.app.ticket.internal.exception.TicketException;
 import io.inverno.app.ticket.internal.exception.TicketNotFoundInPlanException;

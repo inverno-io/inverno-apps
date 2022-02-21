@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.inverno.app.ticket.internal.model.Plan;
 import io.inverno.app.ticket.internal.model.Ticket;
+import io.inverno.app.ticket.internal.service.PlanService;
+import io.inverno.app.ticket.internal.service.TicketService;
 import io.inverno.mod.redis.RedisTransactionalClient;
 import io.inverno.mod.redis.lettuce.PoolRedisClient;
 import io.lettuce.core.RedisConnectionException;

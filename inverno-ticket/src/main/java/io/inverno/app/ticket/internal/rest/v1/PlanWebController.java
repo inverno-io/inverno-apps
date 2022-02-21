@@ -15,7 +15,7 @@
  */
 package io.inverno.app.ticket.internal.rest.v1;
 
-import io.inverno.app.ticket.internal.PlanService;
+import io.inverno.app.ticket.internal.service.PlanService;
 import io.inverno.app.ticket.internal.model.Plan;
 import io.inverno.app.ticket.internal.model.Ticket;
 import io.inverno.app.ticket.internal.rest.DtoMapper;

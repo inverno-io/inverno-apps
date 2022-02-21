@@ -7,31 +7,37 @@ The Inverno Ticket application is a simple yet powerful ticket management applic
 Create containers and start the application:
 
 ```
-> docker-compose up -d
+$ docker-compose up -d
 ```
 
 Stop the application:
 
 ```
-> docker-compose stop
+$ docker-compose stop
 ```
 
 Start the application:
 
 ```
-> docker-compose start
+$ docker-compose start
 ```
 
 Stop the application and remove containers:
 
 ```
-> docker-compose down
+$ docker-compose down
 ```
 
 Stop the application and remove containers and volumes:
 
 ```
-> docker-compose down -v
+$ docker-compose down -v
+```
+
+Connect to Redis using Redis CLI:
+
+```
+$ docker run -it --network inverno-ticket_default --rm redis redis-cli -h redis
 ```
 
 ## Create volumes

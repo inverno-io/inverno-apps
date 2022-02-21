@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.inverno.app.ticket.internal;
+package io.inverno.app.ticket.internal.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inverno.app.ticket.TicketApp;
-import io.inverno.app.ticket.internal.exception.TicketAlreadyExistsException;
 import io.inverno.app.ticket.internal.exception.TicketException;
 import io.inverno.app.ticket.internal.model.Ticket;
 import io.inverno.core.annotation.Bean;
@@ -101,33 +100,34 @@ public class TicketService {
 			}));
 		}
 		else {
-			// Get a new sequence then save
-			return Mono.from(this.redisClient.connection(operations -> {
-				return operations
-					.incr(REDIS_KEY_TICKET_SEQ)
-					.flatMap(ticketId -> {
-						ticket.setCreationDateTime(ZonedDateTime.now(ZoneOffset.UTC));
-						ticket.setStatus(Ticket.Status.OPEN);
-						ticket.setId(ticketId);
+			return this.redisClient
+				.incr(REDIS_KEY_TICKET_SEQ)
+				.flatMap(ticketId -> {
+					ticket.setCreationDateTime(ZonedDateTime.now(ZoneOffset.UTC));
+					ticket.setStatus(Ticket.Status.OPEN);
+					ticket.setId(ticketId);
+					return this.redisClient.multi(operations -> {
 						try {
-							return operations
-								.set()
-								.nx()
-								.build(String.format(REDIS_KEY_TICKET, ticketId), this.mapper.writeValueAsString(ticket))
-								.flatMap(result -> {
-									if(!result.equals("OK")) {
-										// should always be OK
-										throw new IllegalStateException("Received unexpected result: " + result);
-									}
-									return operations.sadd(REDIS_KEY_TICKET_OPEN, Long.toString(ticketId)).thenReturn(ticket);
-								})
-								.switchIfEmpty(Mono.error(() -> new TicketAlreadyExistsException(ticketId)));
-						} 
+							return Flux.just(
+									operations
+										.set()
+										.nx()
+										.build(String.format(REDIS_KEY_TICKET, ticketId), this.mapper.writeValueAsString(ticket)),
+									operations
+										.sadd(REDIS_KEY_TICKET_OPEN, Long.toString(ticketId))
+							);
+						}
 						catch (JsonProcessingException ex) {
 							throw new UncheckedIOException(ex);
 						}
 					});
-			}));
+				})
+				.map(transactionResult -> {
+					if(transactionResult.wasDiscarded()) {
+						throw new TicketException("Error while creating ticket: transaction was discarded");
+					}
+					return ticket;
+				});
 		}
 	}
 	
