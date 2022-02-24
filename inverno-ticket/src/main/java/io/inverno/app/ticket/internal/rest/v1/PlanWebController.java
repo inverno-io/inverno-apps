@@ -40,7 +40,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * <p>
- * Plan related REST endpoints.
+ * Create, update and delete Plans and links tickets to Plans.
  * </p>
  * 
  * @author <a href="mailto:jeremy.kuhn@inverno.io">Jeremy Kuhn</a>
@@ -51,102 +51,124 @@ public class PlanWebController {
 
 	private final PlanService planService;
 	private final DtoMapper<PlanDto, Plan> planDtoMapper;
-	
+
 	/**
-	 * 
+	 *
 	 * @param planService
-	 * @param planDtoMapper 
+	 * @param planDtoMapper
 	 */
 	public PlanWebController(PlanService planService, DtoMapper<PlanDto, Plan> planDtoMapper) {
 		this.planService = planService;
 		this.planDtoMapper = planDtoMapper;
 	}
-	
+
 	/**
-	 * 
-	 * @param plan
+	 * Create a new plan.
+	 *
+	 * @param plan     the plan to create
 	 * @param exchange
-	 * @return 
+	 *
+	 * @return {@inverno.web.status 201} the created plan
 	 */
 	@WebRoute( method = Method.POST, consumes = MediaTypes.APPLICATION_JSON, produces = MediaTypes.APPLICATION_JSON )
 	public Mono<PlanDto> createPlan(@Body PlanDto plan, WebExchange<?> exchange) {
 		plan.setId(null);
 		return this.planDtoMapper.toDomain(plan)
-			.flatMap(this.planService::savePlan)
-			.doOnNext(savedPlan -> {
-				exchange.response().headers(headers -> headers
-					.status(Status.CREATED)
-					.add(Headers.NAME_LOCATION, exchange.request().getPathBuilder().segment(savedPlan.getId().toString()).buildPath())
-				);
-			})
-			.flatMap(this.planDtoMapper::toDto);
+				.flatMap(this.planService::savePlan)
+				.doOnNext(savedPlan ->
+						exchange.response().headers(headers -> headers
+								.status(Status.CREATED)
+								.add(Headers.NAME_LOCATION, exchange.request().getPathBuilder().segment(savedPlan.getId().toString()).buildPath())
+						)
+				)
+				.flatMap(this.planDtoMapper::toDto);
 	}
-	
+
 	/**
-	 * 
-	 * @return 
+	 * List plans.
+	 *
+	 * @return the list of plans
 	 */
 	@WebRoute( method = Method.GET, produces = MediaTypes.APPLICATION_JSON )
 	public Flux<PlanDto> listPlans() {
 		return this.planService.listPlans()
-			.doOnNext(plan -> plan.setTickets(null)) // We don't want to return tickets when listing plans
-			.flatMap(this.planDtoMapper::toDto);
+				.doOnNext(plan -> plan.setTickets(null)) // We don't want to return tickets when listing plans
+				.flatMap(this.planDtoMapper::toDto);
 	}
-	
+
 	/**
-	 * 
-	 * @param planId
-	 * @param statuses
-	 * @return 
+	 * Get a plan with its associated tickets filtered by status.
+	 *
+	 * @param planId   the id of the plan to get
+	 * @param statuses the statuses of the tickets to include, if not specified include all tickets
+	 *
+	 * @return a plan
+	 * @throws NotFoundException if there's no ticket with the specified id
 	 */
-	@WebRoute( path = { "/{planId}" }, method = Method.GET, produces = MediaTypes.APPLICATION_JSON )
+	@WebRoute( path = "/{planId}", method = Method.GET, produces = MediaTypes.APPLICATION_JSON )
 	public Mono<PlanDto> getPlan(@PathParam long planId, @QueryParam Optional<List<Ticket.Status>> statuses) {
-		return statuses.map(s -> this.planService.getPlan(planId, s)).orElse(this.planService.getPlan(planId)).flatMap(this.planDtoMapper::toDto).switchIfEmpty(Mono.error(() -> new NotFoundException()));
+		return statuses.map(s -> this.planService.getPlan(planId, s)).orElse(this.planService.getPlan(planId))
+				.flatMap(this.planDtoMapper::toDto)
+				.switchIfEmpty(Mono.error(() -> new NotFoundException()));
 	}
-	
+
 	/**
-	 * 
-	 * @param planId
-	 * @param plan
-	 * @return 
+	 * Update a plan.
+	 *
+	 * @param planId the id of the plan to update
+	 * @param plan   the updated plan
+	 *
+	 * @return the updated plan
 	 */
-	@WebRoute( path = { "/{planId}" }, method = Method.PUT, consumes = MediaTypes.APPLICATION_JSON, produces = MediaTypes.APPLICATION_JSON )
+	@WebRoute( path = "/{planId}", method = Method.PUT, consumes = MediaTypes.APPLICATION_JSON, produces = MediaTypes.APPLICATION_JSON )
 	public Mono<PlanDto> updatePlan(@PathParam long planId, @Body PlanDto plan) {
 		plan.setId(planId);
-		return this.planDtoMapper.toDomain(plan).flatMap(this.planService::savePlan).flatMap(this.planDtoMapper::toDto);
+		return this.planDtoMapper.toDomain(plan)
+				.flatMap(this.planService::savePlan)
+				.flatMap(this.planDtoMapper::toDto)
+				.switchIfEmpty(Mono.error(() -> new NotFoundException()));
 	}
-	
+
 	/**
-	 * 
-	 * @param planId
-	 * @return 
+	 * Delete a plan.
+	 *
+	 * @param planId the id of the plan to delete
+	 *
+	 * @return the deleted plan
+	 * @throws NotFoundException if there's no ticket with the specified id
 	 */
-	@WebRoute( path = { "/{planId}" }, method = Method.DELETE, produces = MediaTypes.APPLICATION_JSON )
+	@WebRoute( path = "/{planId}", method = Method.DELETE, produces = MediaTypes.APPLICATION_JSON )
 	public Mono<PlanDto> deletePlan(@PathParam long planId) {
-		return this.planService.removePlan(planId).flatMap(this.planDtoMapper::toDto).switchIfEmpty(Mono.error(() -> new NotFoundException()));
+		return this.planService.removePlan(planId)
+				.flatMap(this.planDtoMapper::toDto)
+				.switchIfEmpty(Mono.error(() -> new NotFoundException()));
 	}
-	
+
 	/**
-	 * 
-	 * @param planId
-	 * @param ticketId
-	 * @param referenceTicketId
-	 * @return 
+	 * Add a ticket to a plan.
+	 *
+	 * @param planId            the id of the plan
+	 * @param ticketId          the id of the ticket to add
+	 * @param referenceTicketId the id of the reference ticket before which the ticket must be added, if not specified add the ticket at the end of the list
+	 *
+	 * @return
 	 */
-	@WebRoute( path = { "/{planId}/ticket" }, method = Method.POST, consumes= MediaTypes.APPLICATION_X_WWW_FORM_URLENCODED )
+	@WebRoute( path = "/{planId}/ticket", method = Method.POST, consumes= MediaTypes.APPLICATION_X_WWW_FORM_URLENCODED )
 	public Mono<Void> pushTicket(@PathParam long planId, @FormParam long ticketId, @FormParam Optional<Long> referenceTicketId) {
 		return referenceTicketId
-			.map(refTicketId -> this.planService.insertTicketBefore(planId, ticketId, refTicketId))
-			.orElse(this.planService.addTicket(planId, ticketId));
+				.map(refTicketId -> this.planService.insertTicketBefore(planId, ticketId, refTicketId))
+				.orElse(this.planService.addTicket(planId, ticketId));
 	}
-	
+
 	/**
-	 * 
-	 * @param planId
-	 * @param ticketId
-	 * @return 
+	 * Remove a ticket from a plan.
+	 *
+	 * @param planId   the id of the plan
+	 * @param ticketId the id of the ticket to remove
+	 *
+	 * @return 1 if the ticket was removed, 0 if the ticket wasn't associated to the plan
 	 */
-	@WebRoute( path = { "/{planId}/ticket/{ticketId}" }, method = Method.DELETE, produces = MediaTypes.TEXT_PLAIN )
+	@WebRoute( path = "/{planId}/ticket/{ticketId}", method = Method.DELETE, produces = MediaTypes.TEXT_PLAIN )
 	public Mono<Long> removeTicket(@PathParam long planId, @PathParam long ticketId) {
 		return this.planService.removeTicket(planId, ticketId);
 	}

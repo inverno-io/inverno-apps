@@ -1,0 +1,13 @@
+{
+  "@timestamp": {
+    "$resolver": "timestamp",
+    "pattern": {
+      "format": "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+      "timeZone": "UTC"
+    }
+  },
+  "message": {
+    "$resolver": "message",
+    "stringified": false
+  }
+}

@@ -28,17 +28,11 @@ import java.time.ZonedDateTime;
 public class TicketDto {
 	
 	private Long id;
-	
 	private Ticket.Type type;
-	
 	private Ticket.Status status;
-	
 	private ZonedDateTime creationDateTime;
-	
 	private String title;
-	
 	private String summary;
-	
 	private String description;
 
 	/**

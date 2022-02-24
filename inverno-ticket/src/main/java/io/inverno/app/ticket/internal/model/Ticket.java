@@ -36,9 +36,9 @@ public class Ticket {
 	 * Represents the type of a ticket.
 	 * </p>
 	 */
-	public static enum Type {
+	public enum Type {
 		FEATURE,
-		ISSUE;
+		ISSUE
 	}
 	
 	/**
@@ -46,7 +46,7 @@ public class Ticket {
 	 * Represents the status of a ticket.
 	 * </p>
 	 */
-	public static enum Status {
+	public enum Status {
 		OPEN,
 		STUDIED,
 		IN_PROGRESS,

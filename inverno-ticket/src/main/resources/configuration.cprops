@@ -1,5 +1,14 @@
 io.inverno.app.ticket.ticketAppConfiguration {
-    [ profile = "dev" ] {
-	    web_root = "file:/home/jkuhn/Devel/git/winter/inverno-apps/inverno-ticket/src/main/resources/static/"
+	[ profile = "dev" ] {
+		web_root = "file:/home/jkuhn/Devel/git/winter/inverno-apps/inverno-ticket/src/main/resources/static/"
+	}
+	[ profile = "prod" ] {
+		web.http_server {
+			server_port = 8443
+			tls_enabled = true
+			key_store = "module://io.inverno.app.ticket/keystore.jks"
+			key_alias = "selfsigned"
+			key_store_password = "changeit"
+		}
 	}
 }

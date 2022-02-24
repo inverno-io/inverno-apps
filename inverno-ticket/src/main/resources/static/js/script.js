@@ -524,6 +524,7 @@ const TicketApp = {
 		
 		/* UI Callbacks */
 		const onCreatePlan = () => {
+		    createPlanTitle.value = createPlanSummary.value = createPlanDescription.value = null;
 			document.getElementById('createPlanForm').classList.remove('was-validated');
 			document.getElementById('createPlanForm').reset();
 		};
@@ -540,11 +541,12 @@ const TicketApp = {
 			createPlan({"title": createPlanTitle.value, "summary": createPlanSummary.value, "description": createPlanDescription.value});
 			evt.target.reset();
 		};
-		
+
 		const onAddTicketToPlan = () => {
+		    addToPlanTicketId.value = null;
 			document.getElementById('addTicketToPlanForm').classList.remove('was-validated');
 		};
-		
+
 		const onSubmitAddTicketToPlan = (evt) => {
 			if (!evt.target.checkValidity()) {
                 evt.preventDefault();
@@ -554,10 +556,12 @@ const TicketApp = {
             }
             evt.target.classList.remove('was-validated');
 			addTicketToPlan(selectedPlan.value, addToPlanTicketId.value);
+			addToPlanTicketId.value = null;
 			evt.target.reset();
 		};
-		
+
 		const onCreateTicket = () => {
+		    createTicketType.value = createTicketTitle.value = createTicketSummary.value = createTicketDescription.value = null;
 			createTicketType.value = 'FEATURE';
 			document.getElementById('createTicketForm').classList.remove('was-validated');
 			document.getElementById('createTicketForm').reset();

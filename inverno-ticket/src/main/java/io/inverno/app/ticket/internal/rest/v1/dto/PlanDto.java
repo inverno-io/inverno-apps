@@ -28,15 +28,10 @@ import java.util.List;
 public class PlanDto {
 	
 	private Long id;
-	
 	private String title;
-	
 	private String summary;
-	
 	private String description;
-	
 	private ZonedDateTime creationDateTime;
-	
 	private List<TicketDto> tickets;
 
 	/**

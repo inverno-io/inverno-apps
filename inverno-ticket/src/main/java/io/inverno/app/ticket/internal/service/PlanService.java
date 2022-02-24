@@ -18,7 +18,6 @@ package io.inverno.app.ticket.internal.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inverno.app.ticket.TicketApp;
-import static io.inverno.app.ticket.internal.service.TicketService.REDIS_KEY_TICKET_STATUS;
 import io.inverno.app.ticket.internal.exception.PlanAlreadyExistsException;
 import io.inverno.app.ticket.internal.exception.TicketException;
 import io.inverno.app.ticket.internal.exception.TicketNotFoundInPlanException;
@@ -49,17 +48,15 @@ import reactor.core.publisher.Mono;
 public class PlanService {
 
 	public static final String REDIS_KEY_PLAN = TicketApp.REDIS_KEY + ":Plan:%d";
+	public static final String REDIS_KEY_PLAN_SEQ = TicketApp.REDIS_KEY + ":Plan:SEQ";
+
+	public static final String REDIS_KEY_PLAN_TICKETS = TicketApp.REDIS_KEY + ":Plan:%d:Tickets";
+
 	private static final String REDIS_KEY_PLAN_PATTERN = TicketApp.REDIS_KEY + ":Plan:*";
 	private static final String REDIS_KEY_PLAN_REGEX = TicketApp.REDIS_KEY + ":Plan:[0-9]*";
-	
-	public static final String REDIS_KEY_PLAN_SEQ = TicketApp.REDIS_KEY + ":Plan:SEQ";
-	
-	public static final String REDIS_KEY_PLAN_TICKETS = TicketApp.REDIS_KEY + ":Plan:%d:Tickets";
-	
+
 	private final RedisTransactionalClient<String, String> redisClient;
-	
 	private final ObjectMapper mapper;
-	
 	private final TicketService ticketService;
 
 	/**
@@ -284,7 +281,7 @@ public class PlanService {
 			return Flux.empty();
 		}
 		return Flux.from(this.redisClient.connection(operations -> operations
-			.sunion(keys -> statuses.forEach(status -> keys.key(String.format(REDIS_KEY_TICKET_STATUS, status))))
+			.sunion(keys -> statuses.forEach(status -> keys.key(String.format(TicketService.REDIS_KEY_TICKET_STATUS, status))))
 			.collectList()
 			.filter(ticketIds -> !ticketIds.isEmpty())
 			.flatMapMany(ticketIds -> operations.lrange(String.format(REDIS_KEY_PLAN_TICKETS, planId), 0, -1)

@@ -29,38 +29,19 @@
 	<description>Inverno Ticket application</description>
 
     <dependencies>
-        <dependency>
-            <groupId>io.inverno.mod</groupId>
-            <artifactId>inverno-boot</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.inverno.mod</groupId>
-            <artifactId>inverno-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.inverno.mod</groupId>
-            <artifactId>inverno-redis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.inverno.mod</groupId>
-            <artifactId>inverno-redis-lettuce</artifactId>
-        </dependency>
-        
 		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
+			<groupId>io.inverno.mod</groupId>
+			<artifactId>inverno-boot</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-transport-native-epoll</artifactId>
-			<classifier>linux-x86_64</classifier>
+			<groupId>io.inverno.mod</groupId>
+			<artifactId>inverno-redis-lettuce</artifactId>
 		</dependency>
-		
-		<!-- WebJars -->
 		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>swagger-ui</artifactId>
+			<groupId>io.inverno.mod</groupId>
+			<artifactId>inverno-web</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>vue</artifactId>
@@ -85,6 +66,26 @@
 			<groupId>org.webjars</groupId>
 			<artifactId>highlightjs</artifactId>
 			<version>10.1.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>swagger-ui</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-layout-template-json</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport-native-epoll</artifactId>
+			<classifier>linux-x86_64</classifier>
 		</dependency>
 		
 		<dependency>
@@ -126,7 +127,7 @@
 					<groupId>io.inverno.tool</groupId>
 					<artifactId>inverno-maven-plugin</artifactId>
 					<configuration>
-						<vmOptions>--add-opens reactor.core/reactor.core.publisher=lettuce.core</vmOptions>
+						<vmOptions>--add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-opens org.apache.logging.log4j.log4j.layout.template.json/org.apache.logging.log4j.layout.template.json=org.apache.logging.log4j.core --add-modules io.netty.transport.unix.common,io.netty.transport.epoll</vmOptions>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -143,7 +144,7 @@
 						<artifactId>inverno-maven-plugin</artifactId>
 						<executions>
 							<execution>
-								<id>inverno-build-app</id>
+								<id>build-app</id>
 								<phase>package</phase>
 								<goals>
 									<goal>build-app</goal>
@@ -155,7 +156,7 @@
 									<launchers>
 										<launcher>
 											<name>inverno-ticket</name>
-											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-modules io.netty.transport.unix.common,io.netty.transport.epoll</vmOptions>
+											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-opens org.apache.logging.log4j.log4j.layout.template.json/org.apache.logging.log4j.layout.template.json=org.apache.logging.log4j.core --add-modules io.netty.transport.unix.common,io.netty.transport.epoll</vmOptions>
 										</launcher>
 									</launchers>
 									<formats>
@@ -177,7 +178,7 @@
 						<artifactId>inverno-maven-plugin</artifactId>
 						<executions>
 							<execution>
-								<id>inverno-build-image-docker</id>
+								<id>build-image-docker</id>
 								<phase>install</phase>
 								<goals>
 									<goal>build-image-docker</goal>
@@ -190,7 +191,7 @@
 									<launchers>
 										<launcher>
 											<name>inverno-ticket</name>
-											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-modules io.netty.transport.unix.common,io.netty.transport.epoll</vmOptions>
+											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-opens org.apache.logging.log4j.log4j.layout.template.json/org.apache.logging.log4j.layout.template.json=org.apache.logging.log4j.core --add-modules io.netty.transport.unix.common,io.netty.transport.epoll</vmOptions>
 										</launcher>
 									</launchers>
 									<volumes>

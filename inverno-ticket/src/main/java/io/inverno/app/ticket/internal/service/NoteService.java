@@ -37,7 +37,6 @@ public class NoteService {
 	public static final String REDIS_KEY_TICKET_NOTES = TicketService.REDIS_KEY_TICKET + ":Notes";
 
 	private final RedisTransactionalClient<String, String> redisClient;
-		
 	private final ObjectMapper mapper;
 	
 	/**
@@ -62,23 +61,29 @@ public class NoteService {
 					.lset(String.format(REDIS_KEY_TICKET_NOTES, note.getTicketId()), note.getIndex(), this.mapper.writeValueAsString(note))
 					.onErrorResume(t -> Mono.empty())
 					.map(reply -> note);
-			} 
+			}
 			catch (JsonProcessingException ex) {
 				throw new UncheckedIOException(ex);
 			}
 		}
 		else {
-			try {
-				return this.redisClient
-					.rpush(String.format(REDIS_KEY_TICKET_NOTES, note.getTicketId()), this.mapper.writeValueAsString(note))
-					.map(length -> {
-						note.setIndex(length.intValue() - 1);
-						return note;
-					});
-			}
-			catch (JsonProcessingException ex) {
-				throw new UncheckedIOException(ex);
-			}
+			return Mono.from(this.redisClient.connection(operations ->
+				operations
+					.exists(String.format(TicketService.REDIS_KEY_TICKET, note.getTicketId()))
+					.filter(count -> count > 0)
+					.flatMap(ign -> {
+						try {
+							return operations.rpush(String.format(REDIS_KEY_TICKET_NOTES, note.getTicketId()), this.mapper.writeValueAsString(note))
+								.map(length -> {
+									note.setIndex(length.intValue() - 1);
+									return note;
+								});
+						}
+						catch (JsonProcessingException ex) {
+							throw new UncheckedIOException(ex);
+						}
+					})
+			));
 		}
 	}
 	

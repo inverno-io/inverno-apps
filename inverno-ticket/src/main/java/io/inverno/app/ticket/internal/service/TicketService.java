@@ -41,7 +41,6 @@ import reactor.core.publisher.Mono;
 public class TicketService {
 
 	public static final String REDIS_KEY_TICKET = TicketApp.REDIS_KEY + ":Ticket:%d";
-	
 	public static final String REDIS_KEY_TICKET_SEQ = TicketApp.REDIS_KEY + ":Ticket:SEQ";
 	
 	public static final String REDIS_KEY_TICKET_STATUS = TicketApp.REDIS_KEY + ":Ticket:%s";
@@ -52,7 +51,6 @@ public class TicketService {
 	public static final String REDIS_KEY_TICKET_REJECTED = String.format(REDIS_KEY_TICKET_STATUS, Ticket.Status.REJECTED);
 	
 	private final RedisTransactionalClient<String, String> redisClient;
-	
 	private final ObjectMapper mapper;
 	
 	/**

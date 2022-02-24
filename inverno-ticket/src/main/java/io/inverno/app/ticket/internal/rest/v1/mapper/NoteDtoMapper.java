@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
  *
  * @author jkuhn
  */
-@Bean
+@Bean( visibility = Bean.Visibility.PRIVATE )
 public class NoteDtoMapper implements DtoMapper<NoteDto, Note> {
 
 	@Override

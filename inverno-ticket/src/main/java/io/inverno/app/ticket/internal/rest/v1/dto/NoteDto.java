@@ -25,11 +25,8 @@ package io.inverno.app.ticket.internal.rest.v1.dto;
 public class NoteDto {
 	
 	private long ticketId;
-	
 	private Integer Index;
-	
 	private String title;
-	
 	private String content;
 	
 	/**

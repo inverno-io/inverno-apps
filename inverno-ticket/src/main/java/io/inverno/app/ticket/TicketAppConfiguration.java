@@ -70,6 +70,6 @@ public interface TicketAppConfiguration {
 	 * @return the Web root location
 	 */
 	default URI web_root() {
-		return URI.create("module://io.inverno.app.ticket/static");
+		return URI.create("module://" + TicketAppConfiguration.class.getModule().getName() + "/static");
 	}
 }

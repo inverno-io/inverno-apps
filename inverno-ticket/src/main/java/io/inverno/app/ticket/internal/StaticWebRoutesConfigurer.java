@@ -21,10 +21,7 @@ import io.inverno.mod.base.resource.Resource;
 import io.inverno.mod.base.resource.ResourceService;
 import io.inverno.mod.http.base.Method;
 import io.inverno.mod.http.server.ExchangeContext;
-import io.inverno.mod.web.OpenApiRoutesConfigurer;
-import io.inverno.mod.web.StaticHandler;
-import io.inverno.mod.web.WebJarsRoutesConfigurer;
-import io.inverno.mod.web.WebRoutable;
+import io.inverno.mod.web.*;
 
 /**
  * <p>
@@ -34,7 +31,7 @@ import io.inverno.mod.web.WebRoutable;
  * @author <a href="mailto:jeremy.kuhn@inverno.io">Jeremy Kuhn</a>
  */
 @Bean(visibility = Bean.Visibility.PRIVATE)
-public class StaticWebRoutesConfigurer implements io.inverno.mod.web.WebRoutesConfigurer<ExchangeContext> {
+public class StaticWebRoutesConfigurer implements WebRoutesConfigurer<ExchangeContext> {
 
 	private final TicketAppConfiguration configuration;
 	
@@ -60,19 +57,20 @@ public class StaticWebRoutesConfigurer implements io.inverno.mod.web.WebRoutesCo
 	@Override
 	public void accept(WebRoutable<ExchangeContext, ?> routable) {
 		routable
-			// WebJars
-			.configureRoutes(new WebJarsRoutesConfigurer(this.resourceService))
 			// OpenAPI specifications
 			.configureRoutes(new OpenApiRoutesConfigurer(this.resourceService, true))
-			// Welcome page
-			.route()
-				.path("/", true)
-				.method(Method.GET)
-				.handler(exchange -> exchange.response().body().resource().value(this.homeResource))
+			// WebJars
+			.configureRoutes(new WebJarsRoutesConfigurer(this.resourceService))
 			// Static resources: html, javascript, css, images...
 			.route()
 				.path("/static/{path:.*}", true)
 				.method(Method.GET)
-				.handler(new StaticHandler(this.resourceService.getResource(this.configuration.web_root())));
+				.handler(new StaticHandler(this.resourceService.getResource(this.configuration.web_root())))
+			// Welcome page
+			.route()
+				.path("/", true)
+				.method(Method.GET)
+				.handler(exchange -> exchange.response().body().resource().value(this.homeResource));
+
 	}
 }

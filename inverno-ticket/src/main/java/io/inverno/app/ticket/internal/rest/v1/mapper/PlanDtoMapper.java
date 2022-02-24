@@ -13,11 +13,13 @@ import io.inverno.core.annotation.Bean;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 /**
  *
  * @author jkuhn
  */
-@Bean
+@Bean( visibility = Bean.Visibility.PRIVATE )
 public class PlanDtoMapper implements DtoMapper<PlanDto, Plan> {
 
 	private final DtoMapper<TicketDto, Ticket> ticketDtoMapper;
@@ -28,25 +30,10 @@ public class PlanDtoMapper implements DtoMapper<PlanDto, Plan> {
 	
 	@Override
 	public Mono<PlanDto> toDto(Plan domain) {
-		if(domain.getTickets() != null) {
-			return domain.getTickets()
-				.flatMap(this.ticketDtoMapper::toDto)
-				.collectList()
-				.map(tickets -> {
-					PlanDto dto = new PlanDto();
-
-					dto.setId(domain.getId());
-					dto.setTitle(domain.getTitle());
-					dto.setSummary(domain.getSummary());
-					dto.setDescription(domain.getDescription());
-					dto.setCreationDateTime(domain.getCreationDateTime());
-					dto.setTickets(tickets);
-
-					return dto;
-				});
-		}
-		else {
-			return Mono.fromSupplier(() -> {
+		return Optional.ofNullable(domain.getTickets()).orElse(Flux.empty())
+			.flatMap(this.ticketDtoMapper::toDto)
+			.collectList()
+			.map(tickets -> {
 				PlanDto dto = new PlanDto();
 
 				dto.setId(domain.getId());
@@ -54,10 +41,10 @@ public class PlanDtoMapper implements DtoMapper<PlanDto, Plan> {
 				dto.setSummary(domain.getSummary());
 				dto.setDescription(domain.getDescription());
 				dto.setCreationDateTime(domain.getCreationDateTime());
+				dto.setTickets(tickets);
 
 				return dto;
 			});
-		}
 	}
 
 	@Override

@@ -139,11 +139,13 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
   text-decoration: none;
   opacity: 0.75;
 }
+
 .btn-add:focus {
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
   opacity: 1;
 }
+
 .btn-add:disabled, .btn-add.disabled {
   pointer-events: none;
   -webkit-user-select: none;
