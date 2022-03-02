@@ -589,6 +589,10 @@ const TicketApp = {
 			}
 			selectPlan(selectedPlan.value.id, Array.from(filteredTicketStatuses.value));
 		};
+
+		const edit = () => {
+
+		};
 		
 		return {
 			init,
@@ -679,6 +683,37 @@ const TicketVueAPP = Vue.createApp(TicketApp)
 	.directive('focus', {
 		mounted(el) {
 			el.focus();
+		}
+	})
+	.directive('markdown', {
+		mounted(el, binding) {
+			if(binding.arg === "create") {
+				let mde = new SimpleMDE({
+					"element": el,
+					"tabSize": 4,
+					"autofocus": true,
+					"status": false,
+					"forceSync": true,
+					"toolbar": false
+				});
+				mde.codemirror.on("change", function() {
+					binding.value(mde.value());
+				});
+			}
+			else if(binding.arg === "update") {
+				let mde = new SimpleMDE({
+					"element": el,
+					"tabSize": 4,
+					"autofocus": true,
+					"status": false,
+					"forceSync": true,
+					"toolbar": false
+				});
+				mde.codemirror.on("blur", function() {
+					binding.value(mde.value());
+					mde.toTextArea();
+				});
+			}
 		}
 	})
 	.mount('#ticket-app');

@@ -11,9 +11,11 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 		<script src="/webjars/bootstrap/js/bootstrap.bundle.js"></script>
 		<script src="/webjars/marked/marked.min.js"></script>
 		<script src="/webjars/highlightjs/highlight.min.js"></script>
+		<script src="/webjars/simplemde/dist/simplemde.min.js"></script>
 		<link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
 		<link href="/webjars/bootstrap.icons/font/bootstrap-icons.css" rel="stylesheet"/>
 		<link href="/webjars/highlightjs/styles/default.min.css" rel="stylesheet">
+		<link href="/webjars/simplemde/dist/simplemde.min.css" rel="stylesheet">
 		<link href="/static/css/style.css" rel="stylesheet"/>
 		<title>Inverno Ticket App</title>
 	</head>	
@@ -72,7 +74,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 							</div>
 							<a class="planDescriptionCollapser collapsed" role="button" data-bs-toggle="collapse" href="#planDescriptionCollapse" aria-expanded="false" aria-controls="planDescriptionCollapse" v-if="!expandedPlan && !editedDescriptionPlan && selectedPlan.description"></a>
 							<div class="d-flex flex-column mb-2" v-if="editedDescriptionPlan">
-								<textarea class="form-control w-auto m-1" style="height: 50vh;" v-model="editedDescriptionPlan.description" @blur="updatePlan(editedDescriptionPlan), editedDescriptionPlan = null" v-focus></textarea>
+								<textarea class="form-control w-auto m-1" style="height: 50vh;" v-model="editedDescriptionPlan.description" v-markdown:update="(value) => {editedDescriptionPlan.description = value; updatePlan(editedDescriptionPlan); editedDescriptionPlan = null;}"></textarea>
 							</div>
 						</div>
 					</div>
@@ -157,7 +159,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 								</div>
 								<a role="button" class="ticketDescriptionCollapser collapsed" data-bs-toggle="collapse" href="#ticketDescriptionCollapse" aria-expanded="false" aria-controls="ticketDescriptionCollapse" v-if="!editedDescriptionTicket && selectedTicket.description"></a>
 								<div class="d-flex flex-column mb-2" v-if="editedDescriptionTicket">
-									<textarea class="form-control w-auto m-1" style="height: 30vh;" v-model="editedDescriptionTicket.description" @blur="updateTicket(editedDescriptionTicket), editedDescriptionTicket = null" v-focus></textarea>
+									<textarea class="form-control w-auto m-1" style="height: 50vh;" v-model="editedDescriptionTicket.description" v-markdown:update="(value) => {editedDescriptionTicket.description = value; updateTicket(editedDescriptionTicket); editedDescriptionTicket = null;}"></textarea>
 								</div>
 								<ul class="nav nav-tabs mt-4">
 									<li class="nav-item editable" v-for="note in selectedTicket.notes">
@@ -174,9 +176,9 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 										</button>
 									</li>
 								</ul>
-								<div class="editable border border-top-0 p-2 position-relative flex-grow-1" :class="{'overflow-auto':!editedContentTicketNote}" v-if="selectedTicketNote">
+								<div class="editable editable-grow border border-top-0 p-2 position-relative flex-grow-1 d-flex flex-column" :class="{'overflow-auto':!editedContentTicketNote}" v-if="selectedTicketNote">
 									<div v-html="renderedContentTicketNote" v-if="!editedContentTicketNote"></div>
-									<textarea class="form-control h-100" v-model="editedContentTicketNote.content" @blur="updateTicketNote(editedContentTicketNote), editedContentTicketNote = null" v-else v-focus></textarea>
+									<textarea class="form-control h-100" v-model="editedContentTicketNote.content" v-else v-markdown:update="(value) => {editedContentTicketNote.content = value; updateTicketNote(editedContentTicketNote); editedContentTicketNote = null;}"></textarea>
 									<a class="editor link-secondary m-3 fs-4 align-middle position-absolute top-0 end-0" href="#" v-if="!editedContentTicketNote" @click="editedContentTicketNote = selectedTicketNote"><i class="bi bi-pencil-fill"></i></a>
 								</div>
 							</div>
@@ -206,7 +208,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 							</div>
 							<div class="mb-3">
 								<label for="createPlanDescription" class="form-label">Description</label>
-								<textarea class="form-control" rows="15" id="createPlanDescription" v-model="createPlanDescription"></textarea>
+								<textarea class="form-control" rows="15" id="createPlanDescription" v-model="createPlanDescription" v-markdown:create="(value => {createPlanDescription = value;})"></textarea>
 							</div>
 						</div>
 						<div class="modal-footer">
@@ -248,7 +250,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 							</div>
 							<div class="mb-3">
 								<label for="createTicketDescription" class="form-label">Description</label>
-								<textarea class="form-control" rows="15" id="createTicketDescription" v-model="createTicketDescription"></textarea>
+								<textarea class="form-control" rows="15" id="createTicketDescription" v-model="createTicketDescription" v-markdown:create="(value => {createTicketDescription = value;})"></textarea>
 							</div>
 						</div>
 						<div class="modal-footer">

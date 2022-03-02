@@ -109,6 +109,10 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
 	display: inline-block !important;
 }
 
+.editable.editable-grow .CodeMirror {
+	flex-grow: 1 !important;
+}
+
 .nav-item.editable .editor {
 	display: inline-block !important;
 	visibility: hidden;

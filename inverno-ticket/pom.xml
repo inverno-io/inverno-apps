@@ -67,6 +67,11 @@
 			<artifactId>highlightjs</artifactId>
 			<version>10.1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>simplemde</artifactId>
+			<version>1.11.2</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.webjars</groupId>
