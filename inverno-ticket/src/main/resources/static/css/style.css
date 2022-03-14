@@ -111,6 +111,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
 
 .editable.editable-grow .CodeMirror {
 	flex-grow: 1 !important;
+	border: 0 !important;
 }
 
 .nav-item.editable .editor {
