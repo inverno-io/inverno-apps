@@ -687,16 +687,16 @@ const TicketVueAPP = Vue.createApp(TicketApp)
 	})
 	.directive('scroll', {
 		mounted(el, binding) {
-			if(binding.value.scrollTop === null) {
-				binding.value.scrollTop = 0;
+			if(binding.value.scrollRatio === null) {
+				binding.value.scrollRatio = 0;
 			}
-			el.scrollTo(0, binding.value.scrollTop);
+			el.scrollTo(0, binding.value.scrollRatio * el.scrollTopMax);
 		},
 		updated(el, binding) {
-			if(binding.value.scrollTop === null) {
-				binding.value.scrollTop = 0;
+			if(binding.value.scrollRatio === null) {
+				binding.value.scrollRatio = 0;
 			}
-			el.scrollTo(0, binding.value.scrollTop);
+			el.scrollTo(0, binding.value.scrollRatio * el.scrollTopMax);
 		}
 	})
 	.directive('markdown', {
@@ -724,11 +724,11 @@ const TicketVueAPP = Vue.createApp(TicketApp)
 					"toolbar": false
 				});
 				mde.codemirror.on("blur", function() {
-					binding.value.selectedTicketNote.scrollTop = mde.codemirror.getScrollInfo().top;
+					binding.value.selectedTicketNote.scrollRatio = mde.codemirror.getScrollerElement().scrollTop / mde.codemirror.getScrollerElement().scrollTopMax;
 					binding.value.save(mde.value());
 					mde.toTextArea();
 				});
-				mde.codemirror.scrollTo(0, binding.value.selectedTicketNote.scrollTop);
+				mde.codemirror.scrollTo(0, binding.value.selectedTicketNote.scrollRatio * mde.codemirror.getScrollerElement().scrollTopMax);
 			}
 		}
 	})

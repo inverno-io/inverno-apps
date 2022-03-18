@@ -177,7 +177,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 									</li>
 								</ul>
 								<div class="editable editable-grow border border-top-0 position-relative flex-grow-1 d-flex flex-column overflow-hidden" v-if="selectedTicketNote">
-									<div class="h-100 p-2 overflow-auto" v-if="!editedContentTicketNote" v-scroll="selectedTicketNote" v-on:scroll.passive="evt => {selectedTicketNote.scrollTop = evt.target.scrollTop;}">
+									<div class="h-100 p-2 overflow-auto" v-if="!editedContentTicketNote" v-scroll="selectedTicketNote" v-on:scroll.passive="evt => {selectedTicketNote.scrollRatio = evt.target.scrollTop / evt.target.scrollTopMax;}">
 										<div v-html="renderedContentTicketNote"></div>
 									</div>
 									<textarea class="form-control h-100" v-model="editedContentTicketNote.content" v-else v-markdown:update="{selectedTicketNote, save(value) {editedContentTicketNote.content = value; updateTicketNote(editedContentTicketNote); editedContentTicketNote = null;}}"></textarea>
