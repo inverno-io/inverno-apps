@@ -458,7 +458,7 @@ const TicketApp = {
 				headers: {
 					'content-type':'application/json'
 				},
-				body: JSON.stringify(note)
+				body: JSON.stringify(note,  ["ticketId", "index", "title", "content"])
 			})
 			.then(res => {
 				if (!res.ok) {
@@ -593,7 +593,7 @@ const TicketApp = {
 		const edit = () => {
 
 		};
-		
+
 		return {
 			init,
 			plans,
@@ -685,6 +685,20 @@ const TicketVueAPP = Vue.createApp(TicketApp)
 			el.focus();
 		}
 	})
+	.directive('scroll', {
+		mounted(el, binding) {
+			if(binding.value.scrollTop === null) {
+				binding.value.scrollTop = 0;
+			}
+			el.scrollTo(0, binding.value.scrollTop);
+		},
+		updated(el, binding) {
+			if(binding.value.scrollTop === null) {
+				binding.value.scrollTop = 0;
+			}
+			el.scrollTo(0, binding.value.scrollTop);
+		}
+	})
 	.directive('markdown', {
 		mounted(el, binding) {
 			if(binding.arg === "create") {
@@ -697,7 +711,7 @@ const TicketVueAPP = Vue.createApp(TicketApp)
 					"toolbar": false
 				});
 				mde.codemirror.on("change", function() {
-					binding.value(mde.value());
+					binding.value.save(mde.value());
 				});
 			}
 			else if(binding.arg === "update") {
@@ -710,9 +724,11 @@ const TicketVueAPP = Vue.createApp(TicketApp)
 					"toolbar": false
 				});
 				mde.codemirror.on("blur", function() {
-					binding.value(mde.value());
+					binding.value.selectedTicketNote.scrollTop = mde.codemirror.getScrollInfo().top;
+					binding.value.save(mde.value());
 					mde.toTextArea();
 				});
+				mde.codemirror.scrollTo(0, binding.value.selectedTicketNote.scrollTop);
 			}
 		}
 	})
