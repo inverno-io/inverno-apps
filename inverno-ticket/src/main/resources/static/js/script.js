@@ -724,11 +724,15 @@ const TicketVueAPP = Vue.createApp(TicketApp)
 					"toolbar": false
 				});
 				mde.codemirror.on("blur", function() {
-					binding.value.selectedTicketNote.scrollRatio = mde.codemirror.getScrollerElement().scrollTop / mde.codemirror.getScrollerElement().scrollTopMax;
+					if(binding.value.scrollTarget) {
+						binding.value.scrollTarget.scrollRatio = mde.codemirror.getScrollerElement().scrollTop / mde.codemirror.getScrollerElement().scrollTopMax;
+					}
 					binding.value.save(mde.value());
 					mde.toTextArea();
 				});
-				mde.codemirror.scrollTo(0, binding.value.selectedTicketNote.scrollRatio * mde.codemirror.getScrollerElement().scrollTopMax);
+				if(binding.value.scrollTarget) {
+					mde.codemirror.scrollTo(0, binding.value.scrollTarget.scrollRatio * mde.codemirror.getScrollerElement().scrollTopMax);
+				}
 			}
 		}
 	})
