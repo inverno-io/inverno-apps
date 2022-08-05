@@ -52,20 +52,20 @@ public class StaticWebRoutesConfigurer implements WebRoutesConfigurer<ExchangeCo
 	
 	/**
 	 * 
-	 * @param routable 
+	 * @param routes
 	 */
 	@Override
-	public void accept(WebRoutable<ExchangeContext, ?> routable) {
-		routable
+	public void configure(WebRoutable<ExchangeContext, ?> routes) {
+		routes
 			// OpenAPI specifications
-			.configureRoutes(new OpenApiRoutesConfigurer(this.resourceService, true))
+			.configureRoutes(new OpenApiRoutesConfigurer<>(this.resourceService, true))
 			// WebJars
-			.configureRoutes(new WebJarsRoutesConfigurer(this.resourceService))
+			.configureRoutes(new WebJarsRoutesConfigurer<>(this.resourceService))
 			// Static resources: html, javascript, css, images...
 			.route()
 				.path("/static/{path:.*}", true)
 				.method(Method.GET)
-				.handler(new StaticHandler(this.resourceService.getResource(this.configuration.web_root())))
+				.handler(new StaticHandler<>(this.resourceService.getResource(this.configuration.web_root())))
 			// Welcome page
 			.route()
 				.path("/", true)
