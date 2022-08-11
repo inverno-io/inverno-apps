@@ -19,11 +19,14 @@ import io.inverno.core.annotation.Bean;
 import io.inverno.core.v1.Application;
 import io.inverno.mod.configuration.ConfigurationKey;
 import io.inverno.mod.configuration.ConfigurationProperty;
-import io.inverno.mod.configuration.ConfigurationQueryResult;
 import io.inverno.mod.configuration.ConfigurationSource;
 import io.inverno.mod.configuration.source.BootstrapConfigurationSource;
+import io.inverno.mod.security.authentication.password.RawPassword;
+import io.inverno.mod.security.authentication.user.User;
+import io.inverno.mod.security.identity.PersonIdentity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.List;
@@ -50,10 +53,9 @@ public class TicketApp {
 	@Bean( name = "configurationParameters")
 	public static interface TicketAppConfigurationParameters extends Supplier<List<ConfigurationKey.Parameter>> {}
 
-
 	public static void main(String[] args) throws IOException {
 		final BootstrapConfigurationSource bootstrapConfigurationSource = new BootstrapConfigurationSource(TicketApp.class.getModule(), args);
-		bootstrapConfigurationSource
+		Ticket ticketApp = bootstrapConfigurationSource
 			.get(PROFILE_PROPERTY_NAME)
 			.execute()
 			.single()
@@ -65,6 +67,14 @@ public class TicketApp {
 						.setConfigurationParameters(List.of(ConfigurationKey.Parameter.of(PROFILE_PROPERTY_NAME, profile)))
 				);
 			})
+			.block();
+
+		ticketApp.userRepository().getUser("jsmith")
+			.switchIfEmpty(Mono.defer(() -> ticketApp.userRepository().createUser(User.of("jsmith")
+				.password(new RawPassword("password"))
+				.identity(new PersonIdentity("jsmith", "John", "Smith", "jsmith@inverno.io"))
+				.build())
+			))
 			.block();
 	}
 }

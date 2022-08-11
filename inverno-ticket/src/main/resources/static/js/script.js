@@ -3,14 +3,44 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Other/javascript.js to edit this template
  */
 
+const API_SECURITY_URL = '/api/security';
+const API_IDENTITY_URL = API_SECURITY_URL + '/identity';
+
 const API_BASE_URL = '/api/v1';
 const API_PLAN_URL = API_BASE_URL + '/plan';
 const API_TICKET_URL = API_BASE_URL + '/ticket';
+
+const LOGOUT_URL = '/logout';
 
 const TicketApp = {
 	setup() {
 		/* Init */
 		const init = () => {
+			fetch(API_IDENTITY_URL, {
+				method: 'get'
+			})
+			.then(res => {
+				if (!res.ok) {
+					const error = new Error(res.statusText);
+					error.json = res.json();
+					throw error;
+				}
+				return res.json();
+			})
+			.then(json => {
+				identity.value = json;
+			})
+			.catch(err => {
+				if (err.json) {
+					return err.json.then(json => {
+						alert(json.message);
+					});
+				}
+				else {
+					alert(err.message);
+				}
+			});
+
 			fetch(API_PLAN_URL,  {
 				method: 'get'
 			})
@@ -45,6 +75,7 @@ const TicketApp = {
         });
 		
 		/* Plans */
+		const identity = Vue.ref(null);
 		const plans = Vue.ref([]);
 
 		const selectedPlan = Vue.ref(null);
@@ -590,12 +621,36 @@ const TicketApp = {
 			selectPlan(selectedPlan.value.id, Array.from(filteredTicketStatuses.value));
 		};
 
-		const edit = () => {
-
+		const onLogout = () => {
+			if(confirm('Are you sure you want to logout?')) {
+				fetch(LOGOUT_URL, {
+					method: 'get',
+					redirect: 'manual'
+				})
+				.then(res => {
+					if(res.type !== 'opaqueredirect') {
+						const error = new Error(res.statusText);
+						error.json = res.json();
+						throw error;
+					}
+					window.location = '/login';
+				})
+				.catch(err => {
+					if (err.json) {
+						return err.json.then(json => {
+							alert(json.message);
+						});
+					}
+					else {
+						alert(err.message);
+					}
+				});
+			}
 		};
 
 		return {
 			init,
+			identity,
 			plans,
 			selectedPlan,
 			expandedPlan,
@@ -640,7 +695,8 @@ const TicketApp = {
 			onSubmitAddTicketToPlan,
 			onCreateTicket,
 			onSubmitCreateTicket,
-			onToggleStatus
+			onToggleStatus,
+			onLogout
 		};
 	},
 	computed: {
