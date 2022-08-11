@@ -15,17 +15,21 @@
  */
 package io.inverno.app.ticket.internal.rest.v1;
 
-import io.inverno.app.ticket.internal.service.PlanService;
 import io.inverno.app.ticket.internal.model.Plan;
 import io.inverno.app.ticket.internal.model.Ticket;
 import io.inverno.app.ticket.internal.rest.DtoMapper;
 import io.inverno.app.ticket.internal.rest.v1.dto.PlanDto;
+import io.inverno.app.ticket.internal.service.PlanService;
 import io.inverno.core.annotation.Bean;
 import io.inverno.mod.base.resource.MediaTypes;
+import io.inverno.mod.http.base.ForbiddenException;
 import io.inverno.mod.http.base.Method;
 import io.inverno.mod.http.base.NotFoundException;
 import io.inverno.mod.http.base.Status;
 import io.inverno.mod.http.base.header.Headers;
+import io.inverno.mod.security.accesscontrol.RoleBasedAccessController;
+import io.inverno.mod.security.http.context.SecurityContext;
+import io.inverno.mod.security.identity.PersonIdentity;
 import io.inverno.mod.web.WebExchange;
 import io.inverno.mod.web.annotation.Body;
 import io.inverno.mod.web.annotation.FormParam;
@@ -33,10 +37,11 @@ import io.inverno.mod.web.annotation.PathParam;
 import io.inverno.mod.web.annotation.QueryParam;
 import io.inverno.mod.web.annotation.WebController;
 import io.inverno.mod.web.annotation.WebRoute;
-import java.util.List;
-import java.util.Optional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * <p>
@@ -71,17 +76,25 @@ public class PlanWebController {
 	 * @return {@inverno.web.status 201} the created plan
 	 */
 	@WebRoute( method = Method.POST, consumes = MediaTypes.APPLICATION_JSON, produces = MediaTypes.APPLICATION_JSON )
-	public Mono<PlanDto> createPlan(@Body PlanDto plan, WebExchange<?> exchange) {
-		plan.setId(null);
-		return this.planDtoMapper.toDomain(plan)
-				.flatMap(this.planService::savePlan)
-				.doOnNext(savedPlan ->
+	public Mono<PlanDto> createPlan(@Body PlanDto plan, WebExchange<? extends SecurityContext<? extends PersonIdentity, ? extends RoleBasedAccessController>> exchange) {
+		return exchange.context().getAccessController()
+			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
+			.hasRole("admin")
+			.flatMap(hasRole -> {
+				if(!hasRole) {
+					throw new ForbiddenException();
+				}
+				plan.setId(null);
+				return this.planDtoMapper.toDomain(plan)
+					.flatMap(this.planService::savePlan)
+					.doOnNext(savedPlan ->
 						exchange.response().headers(headers -> headers
-								.status(Status.CREATED)
-								.add(Headers.NAME_LOCATION, exchange.request().getPathBuilder().segment(savedPlan.getId().toString()).buildPath())
+							.status(Status.CREATED)
+							.add(Headers.NAME_LOCATION, exchange.request().getPathBuilder().segment(savedPlan.getId().toString()).buildPath())
 						)
-				)
-				.flatMap(this.planDtoMapper::toDto);
+					)
+					.flatMap(this.planDtoMapper::toDto);
+			});
 	}
 
 	/**
@@ -92,8 +105,8 @@ public class PlanWebController {
 	@WebRoute( method = Method.GET, produces = MediaTypes.APPLICATION_JSON )
 	public Flux<PlanDto> listPlans() {
 		return this.planService.listPlans()
-				.doOnNext(plan -> plan.setTickets(null)) // We don't want to return tickets when listing plans
-				.flatMap(this.planDtoMapper::toDto);
+			.doOnNext(plan -> plan.setTickets(null)) // We don't want to return tickets when listing plans
+			.flatMap(this.planDtoMapper::toDto);
 	}
 
 	/**
@@ -108,8 +121,8 @@ public class PlanWebController {
 	@WebRoute( path = "/{planId}", method = Method.GET, produces = MediaTypes.APPLICATION_JSON )
 	public Mono<PlanDto> getPlan(@PathParam long planId, @QueryParam Optional<List<Ticket.Status>> statuses) {
 		return statuses.map(s -> this.planService.getPlan(planId, s)).orElse(this.planService.getPlan(planId))
-				.flatMap(this.planDtoMapper::toDto)
-				.switchIfEmpty(Mono.error(() -> new NotFoundException()));
+			.flatMap(this.planDtoMapper::toDto)
+			.switchIfEmpty(Mono.error(() -> new NotFoundException()));
 	}
 
 	/**
@@ -117,31 +130,49 @@ public class PlanWebController {
 	 *
 	 * @param planId the id of the plan to update
 	 * @param plan   the updated plan
+	 * @param securityContext
 	 *
 	 * @return the updated plan
 	 */
 	@WebRoute( path = "/{planId}", method = Method.PUT, consumes = MediaTypes.APPLICATION_JSON, produces = MediaTypes.APPLICATION_JSON )
-	public Mono<PlanDto> updatePlan(@PathParam long planId, @Body PlanDto plan) {
-		plan.setId(planId);
-		return this.planDtoMapper.toDomain(plan)
-				.flatMap(this.planService::savePlan)
-				.flatMap(this.planDtoMapper::toDto)
-				.switchIfEmpty(Mono.error(() -> new NotFoundException()));
+	public Mono<PlanDto> updatePlan(@PathParam long planId, @Body PlanDto plan, SecurityContext<? extends PersonIdentity, ? extends RoleBasedAccessController> securityContext) {
+		return securityContext.getAccessController()
+			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
+			.hasRole("admin")
+			.flatMap(hasRole -> {
+				if (!hasRole) {
+					throw new ForbiddenException();
+				}
+				plan.setId(planId);
+				return this.planDtoMapper.toDomain(plan)
+					.flatMap(this.planService::savePlan)
+					.flatMap(this.planDtoMapper::toDto)
+					.switchIfEmpty(Mono.error(() -> new NotFoundException()));
+			});
 	}
 
 	/**
 	 * Delete a plan.
 	 *
 	 * @param planId the id of the plan to delete
+	 * @param securityContext
 	 *
 	 * @return the deleted plan
 	 * @throws NotFoundException if there's no ticket with the specified id
 	 */
 	@WebRoute( path = "/{planId}", method = Method.DELETE, produces = MediaTypes.APPLICATION_JSON )
-	public Mono<PlanDto> deletePlan(@PathParam long planId) {
-		return this.planService.removePlan(planId)
-				.flatMap(this.planDtoMapper::toDto)
-				.switchIfEmpty(Mono.error(() -> new NotFoundException()));
+	public Mono<PlanDto> deletePlan(@PathParam long planId, SecurityContext<? extends PersonIdentity, ? extends RoleBasedAccessController> securityContext) {
+		return securityContext.getAccessController()
+			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
+			.hasRole("admin")
+			.flatMap(hasRole -> {
+				if (!hasRole) {
+					throw new ForbiddenException();
+				}
+				return this.planService.removePlan(planId)
+					.flatMap(this.planDtoMapper::toDto)
+					.switchIfEmpty(Mono.error(() -> new NotFoundException()));
+			});
 	}
 
 	/**
@@ -156,8 +187,8 @@ public class PlanWebController {
 	@WebRoute( path = "/{planId}/ticket", method = Method.POST, consumes= MediaTypes.APPLICATION_X_WWW_FORM_URLENCODED )
 	public Mono<Void> pushTicket(@PathParam long planId, @FormParam long ticketId, @FormParam Optional<Long> referenceTicketId) {
 		return referenceTicketId
-				.map(refTicketId -> this.planService.insertTicketBefore(planId, ticketId, refTicketId))
-				.orElse(this.planService.addTicket(planId, ticketId));
+			.map(refTicketId -> this.planService.insertTicketBefore(planId, ticketId, refTicketId))
+			.orElse(this.planService.addTicket(planId, ticketId));
 	}
 
 	/**

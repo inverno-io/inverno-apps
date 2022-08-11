@@ -73,8 +73,29 @@ public class TicketApp {
 			.switchIfEmpty(Mono.defer(() -> ticketApp.userRepository().createUser(User.of("jsmith")
 				.password(new RawPassword("password"))
 				.identity(new PersonIdentity("jsmith", "John", "Smith", "jsmith@inverno.io"))
+				.groups("developer")
 				.build())
 			))
+			.flatMap(user -> {
+				if(!user.getGroups().contains("developer")) {
+					return ticketApp.userRepository().addUserToGroups("jsmith",  "developer");
+				}
+				return Mono.just(user);
+			})
+			.block();
+
+		ticketApp.userRepository().getUser("admin")
+			.switchIfEmpty(Mono.defer(() -> ticketApp.userRepository().createUser(User.<PersonIdentity>of("admin")
+					.password(new RawPassword("password"))
+					.groups("admin")
+					.build())
+			))
+			.flatMap(user -> {
+				if(!user.getGroups().contains("admin")) {
+					return ticketApp.userRepository().addUserToGroups("admin",  "admin");
+				}
+				return Mono.just(user);
+			})
 			.block();
 	}
 }

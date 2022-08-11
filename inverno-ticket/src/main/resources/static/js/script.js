@@ -96,6 +96,7 @@ const TicketApp = {
 			fetch(API_PLAN_URL, {
 				method: 'post',
 				headers: {
+					'accept':'application/json',
 					'content-type':'application/json'
 				},
 				body: JSON.stringify(plan, ["title", "summary", "description"])
@@ -115,7 +116,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -134,7 +135,10 @@ const TicketApp = {
 				filteredTicketStatuses.value = new Set(["OPEN", "STUDIED", "IN_PROGRESS", "DONE", "REJECTED"]);
 			}
 			fetch(path, {
-				method: 'get'
+				method: 'get',
+				headers: {
+					'accept':'application/json'
+				}
 			})
 			.then(res => {
 				if (!res.ok) {
@@ -156,7 +160,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -197,7 +201,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -208,7 +212,10 @@ const TicketApp = {
 		
 		const addTicketToPlan = (plan, ticketId) => {
 			fetch(API_TICKET_URL + '/' + ticketId, {
-				method: 'get'
+				method: 'get',
+				headers: {
+					'accept':'application/json'
+				}
 			})
 			.then(res => {
 				if (!res.ok) {
@@ -224,7 +231,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -241,6 +248,7 @@ const TicketApp = {
 			fetch(API_PLAN_URL + '/' + plan.id + '/ticket', {
 				method: 'post',
 				headers: {
+					'accept':'application/json',
 					'content-type':'application/x-www-form-urlencoded'
 				},
 				body: body
@@ -267,7 +275,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -278,7 +286,10 @@ const TicketApp = {
 		
 		const removeTicketFromPlan = (plan, ticket) => {
 			fetch(API_PLAN_URL + '/' + plan.id + '/' + ticket.id, {
-				method: 'delete'
+				method: 'delete',
+				headers: {
+					'accept':'application/json'
+				}
 			})
 			.then(res => {
 				if (!res.ok) {
@@ -294,7 +305,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -321,6 +332,7 @@ const TicketApp = {
 			fetch(API_TICKET_URL, {
 				method: 'post',
 				headers: {
+					'accept':'application/json',
 					'content-type':'application/json'
 				},
 				body: JSON.stringify(ticket)
@@ -342,7 +354,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -355,7 +367,10 @@ const TicketApp = {
 			selectedTicket.value = ticket;
 			selectedTicketNote.value = null;
 			fetch(API_TICKET_URL + '/' + ticket.id + '/note', {
-				method: 'get'
+				method: 'get',
+				headers: {
+					'accept':'application/json'
+				}
 			})
 			.then(res => {
 				if (!res.ok) {
@@ -374,7 +389,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -406,7 +421,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -419,6 +434,7 @@ const TicketApp = {
 			fetch(API_TICKET_URL + '/' + ticket.id + '/status', {
 				method: 'post',
 				headers: {
+					'accept': 'application/json',
 					'content-type':'text/plain'
 				},
 				body: status
@@ -437,7 +453,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -455,6 +471,7 @@ const TicketApp = {
 			fetch(API_TICKET_URL + '/' + note.ticketId + '/note', {
 				method: 'post',
 				headers: {
+					'accept': 'application/json',
 					'content-type':'application/json'
 				},
 				body: JSON.stringify(note, ["type", "title", "summary", "description"])
@@ -474,7 +491,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -487,6 +504,7 @@ const TicketApp = {
 			fetch(API_TICKET_URL + '/' + note.ticketId + '/note/' + note.index, {
 				method: 'put',
 				headers: {
+					'accept': 'application/json',
 					'content-type':'application/json'
 				},
 				body: JSON.stringify(note,  ["ticketId", "index", "title", "content"])
@@ -505,7 +523,7 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						alert(json.error + '(' + json.status + '): ' + json.message);
 					});
 				} 
 				else {
@@ -521,7 +539,10 @@ const TicketApp = {
 		const deleteTicketNote = (note) => {
 			if(confirm(`Are you sure you want to delete note '${note.title}'?`)) {
 				fetch(API_TICKET_URL + '/' + note.ticketId + '/note/' + note.index, {
-					method: 'delete'
+					method: 'delete',
+					headers: {
+						'accept': 'application/json'
+					}
 				})
 				.then(res => {
 					if (!res.ok) {
@@ -543,7 +564,7 @@ const TicketApp = {
 				.catch(err => {
 					if (err.json) {
 						return err.json.then(json => {
-							alert(json.message);
+							alert(json.error + '(' + json.status + '): ' + json.message);
 						});
 					} 
 					else {
@@ -625,7 +646,10 @@ const TicketApp = {
 			if(confirm('Are you sure you want to logout?')) {
 				fetch(LOGOUT_URL, {
 					method: 'get',
-					redirect: 'manual'
+					redirect: 'manual',
+					headers: {
+						'accept': 'application/json'
+					}
 				})
 				.then(res => {
 					if(res.type !== 'opaqueredirect') {
@@ -638,7 +662,7 @@ const TicketApp = {
 				.catch(err => {
 					if (err.json) {
 						return err.json.then(json => {
-							alert(json.message);
+							alert(json.error + '(' + json.status + '): ' + json.message);
 						});
 					}
 					else {
