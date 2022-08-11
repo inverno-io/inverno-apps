@@ -29,7 +29,7 @@ import io.inverno.mod.http.base.Status;
 import io.inverno.mod.http.base.header.Headers;
 import io.inverno.mod.security.accesscontrol.RoleBasedAccessController;
 import io.inverno.mod.security.http.context.SecurityContext;
-import io.inverno.mod.security.identity.PersonIdentity;
+import io.inverno.mod.security.identity.Identity;
 import io.inverno.mod.web.WebExchange;
 import io.inverno.mod.web.annotation.Body;
 import io.inverno.mod.web.annotation.FormParam;
@@ -76,7 +76,7 @@ public class PlanWebController {
 	 * @return {@inverno.web.status 201} the created plan
 	 */
 	@WebRoute( method = Method.POST, consumes = MediaTypes.APPLICATION_JSON, produces = MediaTypes.APPLICATION_JSON )
-	public Mono<PlanDto> createPlan(@Body PlanDto plan, WebExchange<? extends SecurityContext<? extends PersonIdentity, ? extends RoleBasedAccessController>> exchange) {
+	public Mono<PlanDto> createPlan(@Body PlanDto plan, WebExchange<? extends SecurityContext<? extends Identity, ? extends RoleBasedAccessController>> exchange) {
 		return exchange.context().getAccessController()
 			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
 			.hasRole("admin")
@@ -135,7 +135,7 @@ public class PlanWebController {
 	 * @return the updated plan
 	 */
 	@WebRoute( path = "/{planId}", method = Method.PUT, consumes = MediaTypes.APPLICATION_JSON, produces = MediaTypes.APPLICATION_JSON )
-	public Mono<PlanDto> updatePlan(@PathParam long planId, @Body PlanDto plan, SecurityContext<? extends PersonIdentity, ? extends RoleBasedAccessController> securityContext) {
+	public Mono<PlanDto> updatePlan(@PathParam long planId, @Body PlanDto plan, SecurityContext<? extends Identity, ? extends RoleBasedAccessController> securityContext) {
 		return securityContext.getAccessController()
 			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
 			.hasRole("admin")
@@ -161,7 +161,7 @@ public class PlanWebController {
 	 * @throws NotFoundException if there's no ticket with the specified id
 	 */
 	@WebRoute( path = "/{planId}", method = Method.DELETE, produces = MediaTypes.APPLICATION_JSON )
-	public Mono<PlanDto> deletePlan(@PathParam long planId, SecurityContext<? extends PersonIdentity, ? extends RoleBasedAccessController> securityContext) {
+	public Mono<PlanDto> deletePlan(@PathParam long planId, SecurityContext<? extends Identity, ? extends RoleBasedAccessController> securityContext) {
 		return securityContext.getAccessController()
 			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
 			.hasRole("admin")

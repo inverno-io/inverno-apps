@@ -45,7 +45,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 
 							</li>
 							<li class="nav-item" v-if="identity">
-								<a class="nav-link" :href="`mailto:${identity.email}`"><i class="bi bi-person-fill"></i> {{identity.firstName}} {{identity.lastName}}</a>
+								<a class="nav-link" :href="`mailto:${identity.mail[0]}`"><i class="bi bi-person-fill"></i> {{identity.displayName}}</a>
 							</li>
 							<li class="nav-item">
 								<a class="nav-link" href="#" @click="onLogout"><i class="bi bi-box-arrow-right"></i></a>

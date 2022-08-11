@@ -20,7 +20,7 @@ import io.inverno.mod.base.resource.MediaTypes;
 import io.inverno.mod.http.base.Method;
 import io.inverno.mod.security.accesscontrol.AccessController;
 import io.inverno.mod.security.http.context.SecurityContext;
-import io.inverno.mod.security.identity.PersonIdentity;
+import io.inverno.mod.security.identity.Identity;
 import io.inverno.mod.web.annotation.WebController;
 import io.inverno.mod.web.annotation.WebRoute;
 
@@ -43,7 +43,7 @@ public class SecurityController {
 	 * @return the user's identity
 	 */
 	@WebRoute( path = "/identity", method = Method.GET, produces = MediaTypes.APPLICATION_JSON )
-	public PersonIdentity identity(SecurityContext<? extends PersonIdentity, ? extends AccessController> securityContext) {
+	public Identity identity(SecurityContext<? extends Identity, ? extends AccessController> securityContext) {
 		return securityContext.getIdentity().get();
 	}
 }

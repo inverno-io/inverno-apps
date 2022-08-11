@@ -43,11 +43,19 @@
 		</dependency>
 		<dependency>
 			<groupId>io.inverno.mod</groupId>
+			<artifactId>inverno-ldap</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.inverno.mod</groupId>
 			<artifactId>inverno-security-http</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.inverno.mod</groupId>
 			<artifactId>inverno-security-jose</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.inverno.mod</groupId>
+			<artifactId>inverno-security-ldap</artifactId>
 		</dependency>
 
 		<dependency>

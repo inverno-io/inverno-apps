@@ -1,0 +1,51 @@
+# inverno.io
+dn: dc=inverno,dc=io
+objectClass: dcObject
+objectClass: organization
+dc: inverno
+o: inverno
+
+# users, inverno.io
+dn: ou=users,dc=inverno,dc=io
+objectClass: organizationalUnit
+ou: users
+
+# jsmith, users, inverno.io
+dn: cn=jsmith,ou=users,dc=inverno,dc=io
+cn: jsmith
+objectClass: inetOrgPerson
+userPassword:: cGFzc3dvcmQ=
+uid: jsmith
+givenName: John
+sn: Smith
+displayName: John Smith
+mail: jsmith@inverno.io
+employeeType: dummy
+title: Chief
+telephoneNumber: +1 408 555 1862
+mobile: +1 408 555 1941
+
+# tktadmin, users, inverno.io
+dn: cn=tktadmin,ou=users,dc=inverno,dc=io
+cn: tktadmin
+objectClass: inetOrgPerson
+userPassword:: cGFzc3dvcmQ=
+uid: tktadmin
+givenName: tktadmin
+sn: tktadmin
+displayName: Admin
+mail: tktadmin@inverno.io
+employeeType: dummy
+
+# developer, users, inverno.io
+dn: cn=developer,ou=users,dc=inverno,dc=io
+cn: developer
+objectClass: groupOfNames
+member: cn=jsmith,ou=users,dc=inverno,dc=io
+
+# admin, users, inverno.io
+dn: cn=admin,ou=users,dc=inverno,dc=io
+cn: admin
+objectClass: groupOfNames
+member: cn=tktadmin,ou=users,dc=inverno,dc=io
+

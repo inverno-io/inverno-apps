@@ -16,19 +16,14 @@
 package io.inverno.app.ticket.internal.security;
 
 import io.inverno.core.annotation.Bean;
-import io.inverno.mod.base.reflect.Types;
 import io.inverno.mod.base.resource.MediaTypes;
 import io.inverno.mod.http.base.ForbiddenException;
 import io.inverno.mod.http.base.Method;
 import io.inverno.mod.http.base.UnauthorizedException;
 import io.inverno.mod.http.server.ExchangeContext;
+import io.inverno.mod.ldap.LDAPClient;
 import io.inverno.mod.security.accesscontrol.GroupsRoleBasedAccessControllerResolver;
 import io.inverno.mod.security.accesscontrol.RoleBasedAccessController;
-import io.inverno.mod.security.authentication.LoginCredentialsMatcher;
-import io.inverno.mod.security.authentication.user.User;
-import io.inverno.mod.security.authentication.user.UserAuthentication;
-import io.inverno.mod.security.authentication.user.UserAuthenticator;
-import io.inverno.mod.security.authentication.user.UserRepository;
 import io.inverno.mod.security.http.AccessControlInterceptor;
 import io.inverno.mod.security.http.SecurityInterceptor;
 import io.inverno.mod.security.http.context.InterceptingSecurityContext;
@@ -46,12 +41,14 @@ import io.inverno.mod.security.http.login.LogoutSuccessHandler;
 import io.inverno.mod.security.http.token.CookieTokenCredentialsExtractor;
 import io.inverno.mod.security.http.token.CookieTokenLoginSuccessHandler;
 import io.inverno.mod.security.http.token.CookieTokenLogoutSuccessHandler;
-import io.inverno.mod.security.identity.PersonIdentity;
-import io.inverno.mod.security.identity.UserIdentityResolver;
 import io.inverno.mod.security.jose.jwa.OCTAlgorithm;
 import io.inverno.mod.security.jose.jws.JWSAuthentication;
 import io.inverno.mod.security.jose.jws.JWSAuthenticator;
 import io.inverno.mod.security.jose.jws.JWSService;
+import io.inverno.mod.security.ldap.authentication.LDAPAuthentication;
+import io.inverno.mod.security.ldap.authentication.LDAPAuthenticator;
+import io.inverno.mod.security.ldap.identity.LDAPIdentity;
+import io.inverno.mod.security.ldap.identity.LDAPIdentityResolver;
 import io.inverno.mod.web.ErrorWebRouter;
 import io.inverno.mod.web.ErrorWebRouterConfigurer;
 import io.inverno.mod.web.WebInterceptable;
@@ -77,12 +74,12 @@ import java.util.List;
 	@WebRoute(path = { "/logout" }, method = { Method.GET }, produces = { "application/json" }),
 })
 @Bean( visibility = Bean.Visibility.PRIVATE )
-public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<PersonIdentity, RoleBasedAccessController>>, WebInterceptorsConfigurer<InterceptingSecurityContext<PersonIdentity, RoleBasedAccessController>>, ErrorWebRouterConfigurer<ExchangeContext> {
+public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<LDAPIdentity, RoleBasedAccessController>>, WebInterceptorsConfigurer<InterceptingSecurityContext<LDAPIdentity, RoleBasedAccessController>>, ErrorWebRouterConfigurer<ExchangeContext> {
 
 	/**
-	 * The user repository
+	 * The LDAP client.
 	 */
-	private final UserRepository<PersonIdentity, User<PersonIdentity>> userRepository;
+	private final LDAPClient ldapClient;
 
 	/**
 	 * The JWS service
@@ -94,16 +91,16 @@ public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<P
 	 * Creates the security configurer.
 	 * </p>
 	 *
-	 * @param userRepository
+	 * @param ldapClient
 	 * @param jwsService
 	 */
-	public SecurityConfigurer(UserRepository<PersonIdentity, User<PersonIdentity>> userRepository, JWSService jwsService) {
-		this.userRepository = userRepository;
+	public SecurityConfigurer(LDAPClient ldapClient, JWSService jwsService) {
+		this.ldapClient = ldapClient;
 		this.jwsService = jwsService;
 	}
 
 	@Override
-	public void configure(WebRoutable<SecurityContext<PersonIdentity, RoleBasedAccessController>, ?> routes) {
+	public void configure(WebRoutable<SecurityContext<LDAPIdentity, RoleBasedAccessController>, ?> routes) {
 		routes
 			.route()
 				.path("/login")
@@ -114,9 +111,9 @@ public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<P
 				.method(Method.POST)
 				.handler(new LoginActionHandler<>(
 					new FormCredentialsExtractor(),
-					new UserAuthenticator<>(this.userRepository, new LoginCredentialsMatcher<>())
+					new LDAPAuthenticator(this.ldapClient, "dc=inverno,dc=io")
 						.failOnDenied()
-						.flatMap(authentication -> this.jwsService.<UserAuthentication<PersonIdentity>>builder(UserAuthentication.class)
+						.flatMap(authentication -> this.jwsService.builder(LDAPAuthentication.class)
 							.header(header -> header
 								.keyId("tkt")
 								.algorithm(OCTAlgorithm.HS512.getAlgorithm())
@@ -144,7 +141,7 @@ public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<P
 	}
 
 	@Override
-	public void configure(WebInterceptable<InterceptingSecurityContext<PersonIdentity, RoleBasedAccessController>, ?> interceptors) {
+	public void configure(WebInterceptable<InterceptingSecurityContext<LDAPIdentity, RoleBasedAccessController>, ?> interceptors) {
 		interceptors
 			.intercept()
 				.path("/")
@@ -156,13 +153,13 @@ public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<P
 				.interceptors(List.of(
 					SecurityInterceptor.of(
 						new CookieTokenCredentialsExtractor(),
-						new JWSAuthenticator<UserAuthentication<PersonIdentity>>(
+						new JWSAuthenticator<>(
 							this.jwsService,
-							Types.type(UserAuthentication.class).type(PersonIdentity.class).and().build()
+							LDAPAuthentication.class
 						)
 						.failOnDenied()
 						.map(jwsAuthentication -> jwsAuthentication.getJws().getPayload()),
-						new UserIdentityResolver<>(),
+						new LDAPIdentityResolver(this.ldapClient),
 						new GroupsRoleBasedAccessControllerResolver()
 					),
 					AccessControlInterceptor.authenticated()
