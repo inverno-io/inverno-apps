@@ -27,7 +27,7 @@ import io.inverno.mod.http.base.Method;
 import io.inverno.mod.http.base.NotFoundException;
 import io.inverno.mod.http.base.Status;
 import io.inverno.mod.http.base.header.Headers;
-import io.inverno.mod.security.accesscontrol.RoleBasedAccessController;
+import io.inverno.mod.security.accesscontrol.PermissionBasedAccessController;
 import io.inverno.mod.security.http.context.SecurityContext;
 import io.inverno.mod.security.identity.Identity;
 import io.inverno.mod.web.WebExchange;
@@ -76,25 +76,17 @@ public class PlanWebController {
 	 * @return {@inverno.web.status 201} the created plan
 	 */
 	@WebRoute( method = Method.POST, consumes = MediaTypes.APPLICATION_JSON, produces = MediaTypes.APPLICATION_JSON )
-	public Mono<PlanDto> createPlan(@Body PlanDto plan, WebExchange<? extends SecurityContext<? extends Identity, ? extends RoleBasedAccessController>> exchange) {
-		return exchange.context().getAccessController()
-			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
-			.hasRole("admin")
-			.flatMap(hasRole -> {
-				if(!hasRole) {
-					throw new ForbiddenException();
-				}
-				plan.setId(null);
-				return this.planDtoMapper.toDomain(plan)
-					.flatMap(this.planService::savePlan)
-					.doOnNext(savedPlan ->
-						exchange.response().headers(headers -> headers
+	public Mono<PlanDto> createPlan(@Body PlanDto plan, WebExchange<?> exchange) {
+		plan.setId(null);
+		return this.planDtoMapper.toDomain(plan)
+			.flatMap(this.planService::savePlan)
+			.doOnNext(savedPlan ->
+					exchange.response().headers(headers -> headers
 							.status(Status.CREATED)
 							.add(Headers.NAME_LOCATION, exchange.request().getPathBuilder().segment(savedPlan.getId().toString()).buildPath())
-						)
 					)
-					.flatMap(this.planDtoMapper::toDto);
-			});
+			)
+			.flatMap(this.planDtoMapper::toDto);
 	}
 
 	/**
@@ -130,49 +122,31 @@ public class PlanWebController {
 	 *
 	 * @param planId the id of the plan to update
 	 * @param plan   the updated plan
-	 * @param securityContext
 	 *
 	 * @return the updated plan
 	 */
 	@WebRoute( path = "/{planId}", method = Method.PUT, consumes = MediaTypes.APPLICATION_JSON, produces = MediaTypes.APPLICATION_JSON )
-	public Mono<PlanDto> updatePlan(@PathParam long planId, @Body PlanDto plan, SecurityContext<? extends Identity, ? extends RoleBasedAccessController> securityContext) {
-		return securityContext.getAccessController()
-			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
-			.hasRole("admin")
-			.flatMap(hasRole -> {
-				if (!hasRole) {
-					throw new ForbiddenException();
-				}
-				plan.setId(planId);
-				return this.planDtoMapper.toDomain(plan)
-					.flatMap(this.planService::savePlan)
-					.flatMap(this.planDtoMapper::toDto)
-					.switchIfEmpty(Mono.error(() -> new NotFoundException()));
-			});
+	public Mono<PlanDto> updatePlan(@PathParam long planId, @Body PlanDto plan) {
+		plan.setId(planId);
+		return this.planDtoMapper.toDomain(plan)
+			.flatMap(this.planService::savePlan)
+			.flatMap(this.planDtoMapper::toDto)
+			.switchIfEmpty(Mono.error(() -> new NotFoundException()));
 	}
 
 	/**
 	 * Delete a plan.
 	 *
 	 * @param planId the id of the plan to delete
-	 * @param securityContext
 	 *
 	 * @return the deleted plan
 	 * @throws NotFoundException if there's no ticket with the specified id
 	 */
 	@WebRoute( path = "/{planId}", method = Method.DELETE, produces = MediaTypes.APPLICATION_JSON )
-	public Mono<PlanDto> deletePlan(@PathParam long planId, SecurityContext<? extends Identity, ? extends RoleBasedAccessController> securityContext) {
-		return securityContext.getAccessController()
-			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
-			.hasRole("admin")
-			.flatMap(hasRole -> {
-				if (!hasRole) {
-					throw new ForbiddenException();
-				}
-				return this.planService.removePlan(planId)
-					.flatMap(this.planDtoMapper::toDto)
-					.switchIfEmpty(Mono.error(() -> new NotFoundException()));
-			});
+	public Mono<PlanDto> deletePlan(@PathParam long planId) {
+		return this.planService.removePlan(planId)
+			.flatMap(this.planDtoMapper::toDto)
+			.switchIfEmpty(Mono.error(() -> new NotFoundException()));
 	}
 
 	/**
@@ -181,14 +155,23 @@ public class PlanWebController {
 	 * @param planId            the id of the plan
 	 * @param ticketId          the id of the ticket to add
 	 * @param referenceTicketId the id of the reference ticket before which the ticket must be added, if not specified add the ticket at the end of the list
+	 * @param securityContext
 	 *
 	 * @return
 	 */
 	@WebRoute( path = "/{planId}/ticket", method = Method.POST, consumes= MediaTypes.APPLICATION_X_WWW_FORM_URLENCODED )
-	public Mono<Void> pushTicket(@PathParam long planId, @FormParam long ticketId, @FormParam Optional<Long> referenceTicketId) {
-		return referenceTicketId
-			.map(refTicketId -> this.planService.insertTicketBefore(planId, ticketId, refTicketId))
-			.orElse(this.planService.addTicket(planId, ticketId));
+	public Mono<Void> pushTicket(@PathParam long planId, @FormParam long ticketId, @FormParam Optional<Long> referenceTicketId, SecurityContext<? extends Identity, ? extends PermissionBasedAccessController> securityContext) {
+		return securityContext.getAccessController()
+			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
+			.hasPermission("push", "plan", Long.toString(planId))
+				.flatMap(hasPermission -> {
+					if(!hasPermission) {
+						throw new ForbiddenException();
+					}
+					return referenceTicketId
+						.map(refTicketId -> this.planService.insertTicketBefore(planId, ticketId, refTicketId))
+						.orElse(this.planService.addTicket(planId, ticketId));
+				});
 	}
 
 	/**
@@ -200,7 +183,15 @@ public class PlanWebController {
 	 * @return 1 if the ticket was removed, 0 if the ticket wasn't associated to the plan
 	 */
 	@WebRoute( path = "/{planId}/ticket/{ticketId}", method = Method.DELETE, produces = MediaTypes.TEXT_PLAIN )
-	public Mono<Long> removeTicket(@PathParam long planId, @PathParam long ticketId) {
-		return this.planService.removeTicket(planId, ticketId);
+	public Mono<Long> removeTicket(@PathParam long planId, @PathParam long ticketId, SecurityContext<? extends Identity, ? extends PermissionBasedAccessController> securityContext) {
+		return securityContext.getAccessController()
+			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
+			.hasPermission("remove", "plan", Long.toString(planId))
+			.flatMap(hasPermission -> {
+				if(!hasPermission) {
+					throw new ForbiddenException();
+				}
+				return this.planService.removeTicket(planId, ticketId);
+			});
 	}
 }
