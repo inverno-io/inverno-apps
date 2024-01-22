@@ -19,8 +19,8 @@ import io.inverno.app.ticket.TicketAppConfiguration;
 import io.inverno.core.annotation.Bean;
 import io.inverno.mod.base.resource.Resource;
 import io.inverno.mod.base.resource.ResourceService;
+import io.inverno.mod.http.base.ExchangeContext;
 import io.inverno.mod.http.base.Method;
-import io.inverno.mod.http.server.ExchangeContext;
 import io.inverno.mod.web.*;
 
 /**
