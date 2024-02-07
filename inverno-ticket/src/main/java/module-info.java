@@ -34,6 +34,7 @@ module io.inverno.app.ticket {
 	requires io.inverno.mod.security.ldap;
 
 	requires org.apache.logging.log4j;
+	requires org.apache.logging.log4j.layout.template.json;
 
 	exports io.inverno.app.ticket.internal.model to com.fasterxml.jackson.databind;
 	exports io.inverno.app.ticket.internal.rest.v1.dto to com.fasterxml.jackson.databind;

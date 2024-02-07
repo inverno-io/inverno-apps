@@ -152,7 +152,7 @@
 					<groupId>io.inverno.tool</groupId>
 					<artifactId>inverno-maven-plugin</artifactId>
 					<configuration>
-						<vmOptions>--add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-opens org.apache.logging.log4j.log4j.layout.template.json/org.apache.logging.log4j.layout.template.json=org.apache.logging.log4j.core --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
+						<vmOptions>--add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -168,7 +168,7 @@
 						<groupId>io.inverno.tool</groupId>
 						<artifactId>inverno-maven-plugin</artifactId>
 						<configuration>
-						<vmOptions>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-opens org.apache.logging.log4j.log4j.layout.template.json/org.apache.logging.log4j.layout.template.json=org.apache.logging.log4j.core --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
+						<vmOptions>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
 						</configuration>
 					</plugin>
 				</plugins>
@@ -223,7 +223,7 @@
 									<launchers>
 										<launcher>
 											<name>inverno-ticket</name>
-											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-opens org.apache.logging.log4j.log4j.layout.template.json/org.apache.logging.log4j.layout.template.json=org.apache.logging.log4j.core --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
+											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
 										</launcher>
 									</launchers>
 									<archiveFormats>
@@ -258,7 +258,7 @@
 									<launchers>
 										<launcher>
 											<name>inverno-ticket</name>
-											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-opens org.apache.logging.log4j.log4j.layout.template.json/org.apache.logging.log4j.layout.template.json=org.apache.logging.log4j.core --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
+											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
 										</launcher>
 									</launchers>
 									<volumes>
