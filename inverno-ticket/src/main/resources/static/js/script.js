@@ -1,7 +1,20 @@
-/* 
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Other/javascript.js to edit this template
+/*
+ * Copyright 2022 Jeremy KUHN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
+import SplitPanel from './split-panel.js'
 
 const API_SECURITY_URL = '/api/security';
 const API_IDENTITY_URL = API_SECURITY_URL + '/identity';
@@ -17,7 +30,10 @@ const TicketApp = {
 		/* Init */
 		const init = () => {
 			fetch(API_IDENTITY_URL, {
-				method: 'get'
+				method: 'get',
+				headers: {
+					'accept': 'application/json'
+				}
 			})
 			.then(res => {
 				if (!res.ok) {
@@ -33,11 +49,11 @@ const TicketApp = {
 			.catch(err => {
 				if (err.json) {
 					return err.json.then(json => {
-						alert(json.message);
+						console.warn(json.error + '(' + json.status + '): ' + json.message);
 					});
 				}
 				else {
-					alert(err.message);
+					console.warn(err.message);
 				}
 			});
 
@@ -86,9 +102,12 @@ const TicketApp = {
 		const editedDescriptionPlan = Vue.ref(null);
 		
 		const addToPlanTicketId = Vue.ref(null);
+		const creatingPlan = Vue.ref(false);
 		const createPlanTitle = Vue.ref(null);
 		const createPlanSummary = Vue.ref(null);
 		const createPlanDescription = Vue.ref(null);
+		
+		const ticketListSize = Vue.ref(20);
 		
 		const filteredTicketStatuses = Vue.ref(new Set([]));
 		
@@ -322,7 +341,8 @@ const TicketApp = {
 		const editedTitleTicket = Vue.ref(null);
 		const editedSummaryTicket = Vue.ref(null);
 		const editedDescriptionTicket = Vue.ref(null);
-		
+
+		const creatingTicket = Vue.ref(false);
 		const createTicketType = Vue.ref(null);
 		const createTicketTitle = Vue.ref(null);
 		const createTicketSummary = Vue.ref(null);
@@ -579,6 +599,7 @@ const TicketApp = {
 		    createPlanTitle.value = createPlanSummary.value = createPlanDescription.value = null;
 			document.getElementById('createPlanForm').classList.remove('was-validated');
 			document.getElementById('createPlanForm').reset();
+			creatingPlan.value = true;
 		};
 
 		const onSubmitCreatePlan = (evt) => {
@@ -592,6 +613,7 @@ const TicketApp = {
 			bootstrap.Modal.getInstance(document.getElementById('createPlanModal')).hide();
 			createPlan({"title": createPlanTitle.value, "summary": createPlanSummary.value, "description": createPlanDescription.value});
 			evt.target.reset();
+			creatingPlan.value = false;
 		};
 
 		const onAddTicketToPlan = () => {
@@ -617,6 +639,7 @@ const TicketApp = {
 			createTicketType.value = 'FEATURE';
 			document.getElementById('createTicketForm').classList.remove('was-validated');
 			document.getElementById('createTicketForm').reset();
+			creatingTicket.value = true;
 		};
 
 		const onSubmitCreateTicket = (evt) => {
@@ -630,6 +653,7 @@ const TicketApp = {
 			bootstrap.Modal.getInstance(document.getElementById('createTicketModal')).hide();
 			createTicket({"type": createTicketType.value, "title": createTicketTitle.value, "summary": createTicketSummary.value, "description": createTicketDescription.value});
 			evt.target.reset();
+			creatingTicket.value = false;
 		};
 		
 		const onToggleStatus = (status) => {
@@ -682,9 +706,11 @@ const TicketApp = {
 			editedSummaryPlan,
 			editedDescriptionPlan,
 			addToPlanTicketId,
+			creatingPlan,
 			createPlanTitle,
 			createPlanSummary,
 			createPlanDescription,
+			ticketListSize,
 			filteredTicketStatuses,
 			createPlan,
 			selectPlan,
@@ -698,6 +724,7 @@ const TicketApp = {
 			editedTitleTicket,
 			editedSummaryTicket,
 			editedDescriptionTicket,
+			creatingTicket,
 			createTicketType,
 			createTicketTitle,
 			createTicketSummary,
@@ -759,7 +786,9 @@ const TicketApp = {
 		}
 	}
 };
+
 const TicketVueAPP = Vue.createApp(TicketApp)
+    .component('split-panel', SplitPanel)
 	.directive('focus', {
 		mounted(el) {
 			el.focus();
@@ -782,7 +811,11 @@ const TicketVueAPP = Vue.createApp(TicketApp)
 	.directive('markdown', {
 		mounted(el, binding) {
 			if(binding.arg === "create") {
-				let mde = new SimpleMDE({
+				if(el.mde) {
+					el.mde.toTextArea();
+					el.mde = null;
+				}
+				el.mde = new SimpleMDE({
 					"element": el,
 					"tabSize": 4,
 					"autofocus": true,
@@ -790,12 +823,12 @@ const TicketVueAPP = Vue.createApp(TicketApp)
 					"forceSync": true,
 					"toolbar": false
 				});
-				mde.codemirror.on("change", function() {
-					binding.value.save(mde.value());
+				el.mde.codemirror.on("change", function() {
+					binding.value.save(el.mde.value());
 				});
 			}
 			else if(binding.arg === "update") {
-				let mde = new SimpleMDE({
+				el.mde = new SimpleMDE({
 					"element": el,
 					"tabSize": 4,
 					"autofocus": true,
@@ -803,16 +836,22 @@ const TicketVueAPP = Vue.createApp(TicketApp)
 					"forceSync": true,
 					"toolbar": false
 				});
-				mde.codemirror.on("blur", function() {
+				el.mde.codemirror.on("blur", function() {
 					if(binding.value.scrollTarget) {
-						binding.value.scrollTarget.scrollRatio = mde.codemirror.getScrollerElement().scrollTop / mde.codemirror.getScrollerElement().scrollTopMax;
+						binding.value.scrollTarget.scrollRatio = el.mde.codemirror.getScrollerElement().scrollTop / el.mde.codemirror.getScrollerElement().scrollTopMax;
 					}
-					binding.value.save(mde.value());
-					mde.toTextArea();
+					binding.value.save(el.mde.value());
+					el.mde.toTextArea();
 				});
 				if(binding.value.scrollTarget) {
-					mde.codemirror.scrollTo(0, binding.value.scrollTarget.scrollRatio * mde.codemirror.getScrollerElement().scrollTopMax);
+					el.mde.codemirror.scrollTo(0, binding.value.scrollTarget.scrollRatio * el.mde.codemirror.getScrollerElement().scrollTopMax);
 				}
+			}
+		},
+		beforeUnmount(el, binding) {
+			if(el.mde) {
+				el.mde.toTextArea();
+				el.mde = null;
 			}
 		}
 	})
