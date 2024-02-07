@@ -1,8 +1,19 @@
 <!DOCTYPE html>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
--->
+<!-- 
+	Copyright 2022 Jeremy KUHN
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	   http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ -->
 <html>
 	<head>
 		<meta charset="UTF-8">
@@ -104,97 +115,101 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 							</ul>
 						</div>
 					</div>
-					<div class="flex-grow-1 d-flex overflow-hidden" v-if="!expandedPlan && !(filteredTicketStatuses.size == 5 && selectedPlan.tickets.length == 0)">
-						<div id="ticketListSlot" class="col-3 px-0 me-2 overflow-auto" style="scrollbar-width: thin" v-if="!expandedTicket">
-							<form id="addTicketToPlanForm" class="d-flex mt-1 mb-3 needs-validation" @submit.prevent="onSubmitAddTicketToPlan" novalidate>
-								<div class="flex-grow-1 position-relative">
-									<input class="form-control" type="text" placeholder="Ticket Id" v-model="addToPlanTicketId" @focus="onAddTicketToPlan" required/>
-									<div class="invalid-tooltip">Please provide a ticket id to add.</div>
-								</div>
-								<div>
-									<button type="submit" class="btn btn-primary ms-2">Add</button>
-								</div>
-							</form>
-							<div class="mb-3 filters">
-								<button class="btn badge rounded-pill me-1" :class="[filteredTicketStatuses.has('OPEN') ? 'selected btn-primary' : 'btn-secondary']" @click="onToggleStatus('OPEN')">OPEN</button> 
-								<button class="btn badge rounded-pill me-1" :class="[filteredTicketStatuses.has('STUDIED') ? 'selected btn-info' : 'btn-secondary']" @click="onToggleStatus('STUDIED')">STUDIED</button> 
-								<button class="btn badge rounded-pill me-1" :class="[filteredTicketStatuses.has('IN_PROGRESS') ? 'selected btn-success' : 'btn-secondary']" @click="onToggleStatus('IN_PROGRESS')">IN PROGRESS</button> 
-								<button class="btn badge rounded-pill me-1" :class="[filteredTicketStatuses.has('DONE') ? 'selected btn-secondary' : 'btn-secondary']" @click="onToggleStatus('DONE')">DONE</button> 
-								<button class="btn badge rounded-pill me-1" :class="[filteredTicketStatuses.has('REJECTED') ? 'selected btn-secondary' : 'btn-secondary']" @click="onToggleStatus('REJECTED')">REJECTED</button> 
-							</div>
-							<div class="list-group">
-								<a href="#" class="list-group-item d-flex justify-content-between align-items-start" :class="{'list-group-item active': selectedTicket != null && ticket.id == selectedTicket.id}" v-for="ticket of selectedPlan.tickets" @click="selectTicket(ticket)" draggable="true" @dragstart="draggedTicket = ticket" @drop="insertTicketToPlan(selectedPlan, draggedTicket, ticket)" @dragover.prevent="">
-									<i class="bi bi-bug" v-if="ticket.type == 'ISSUE'"></i><i class="bi bi-tools" v-if="ticket.type == 'FEATURE'"></i>
-									<div class="ms-4 me-auto">
-										<div class="fw-bold">#{{ticket.id}} {{ticket.title}}</div>
-										{{ticket.summary}}
+					<split-panel class="border-0 flex-grow-1 overflow-hidden" :percent="20" :expand="expandedTicket ? 'right' : null" v-if="!expandedPlan && !(filteredTicketStatuses.size == 5 && selectedPlan.tickets.length == 0)">
+						<template v-slot:left>
+							<div id="ticketListSlot" class="px-0 me-2 overflow-auto" style="scrollbar-width: thin;">
+								<form id="addTicketToPlanForm" class="d-flex mt-1 mb-3 needs-validation" @submit.prevent="onSubmitAddTicketToPlan" novalidate>
+									<div class="flex-grow-1 position-relative">
+										<input class="form-control" type="text" placeholder="Ticket Id" v-model="addToPlanTicketId" @focus="onAddTicketToPlan" required/>
+										<div class="invalid-tooltip">Please provide a ticket id to add.</div>
 									</div>
-									<span class="badge rounded-pill" :class="{ 'bg-primary': ticket.status == 'OPEN', 'bg-info': ticket.status == 'STUDIED', 'bg-success': ticket.status == 'IN_PROGRESS', 'bg-secondary': ticket.status == 'DONE' || ticket.status == 'REJECTED'}">{{ticket.status}}</span>
-								</a>
-							</div>
-						</div>
-						<div id="ticketSlot" class="col ms-2 overflow-hidden d-flex flex-column" :class="{'expanded': expandedTicket}" v-if="selectedTicket">
-							<h3 class="d-flex align-items-start">
-								<span class="me-4"><i class="bi bi-bug" v-if="selectedTicket.type == 'ISSUE'"></i><i class="bi bi-tools" v-if="selectedTicket.type == 'FEATURE'"></i></span> 
-								<div class="flex-grow-1 editable">
-									<span v-if="!editedTitleTicket" @click="editedTitleTicket = selectedTicket">#{{selectedTicket.id}} {{selectedTicket.title}}</span>
-									<input class="fs-3 d-block border w-100" style="all: unset;" v-model="editedTitleTicket.title" @blur="updateTicket(editedTitleTicket), editedTitleTicket = null" @keyup.enter="updateTicket(editedTitleTicket), editedTitleTicket = null" v-else v-focus/>
-									<a class="editor link-secondary ms-2 fs-6 align-middle" href="#" v-if="!editedTitleTicket" @click="editedTitleTicket = selectedTicket"><i class="bi bi-pencil-fill"></i></a>
+									<div>
+										<button type="submit" class="btn btn-primary ms-2">Add</button>
+									</div>
+								</form>
+								<div class="mb-3 filters">
+									<button class="btn badge rounded-pill me-1" :class="[filteredTicketStatuses.has('OPEN') ? 'selected btn-primary' : 'btn-secondary']" @click="onToggleStatus('OPEN')">OPEN</button> 
+									<button class="btn badge rounded-pill me-1" :class="[filteredTicketStatuses.has('STUDIED') ? 'selected btn-info' : 'btn-secondary']" @click="onToggleStatus('STUDIED')">STUDIED</button> 
+									<button class="btn badge rounded-pill me-1" :class="[filteredTicketStatuses.has('IN_PROGRESS') ? 'selected btn-success' : 'btn-secondary']" @click="onToggleStatus('IN_PROGRESS')">IN PROGRESS</button> 
+									<button class="btn badge rounded-pill me-1" :class="[filteredTicketStatuses.has('DONE') ? 'selected btn-secondary' : 'btn-secondary']" @click="onToggleStatus('DONE')">DONE</button> 
+									<button class="btn badge rounded-pill me-1" :class="[filteredTicketStatuses.has('REJECTED') ? 'selected btn-secondary' : 'btn-secondary']" @click="onToggleStatus('REJECTED')">REJECTED</button> 
 								</div>
-								<div class="dropdown">
-									<button class="btn dropdown-toggle text-white mx-3" :class="{ 'bg-primary': selectedTicket.status == 'OPEN', 'bg-info': selectedTicket.status == 'STUDIED', 'bg-success': selectedTicket.status == 'IN_PROGRESS', 'bg-secondary': selectedTicket.status == 'DONE' || selectedTicket.status == 'REJECTED'}" type="button" id="ticketStatusDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">{{selectedTicket.status}}</button>
-									<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="ticketStatusDropdownButton">
-										<li><a class="dropdown-item" href="#" v-if="selectedTicket.status != 'OPEN'" @click="updateTicketStatus(selectedTicket, 'OPEN')">OPEN</a></li>
-										<li><a class="dropdown-item" href="#" v-if="selectedTicket.status != 'STUDIED'" @click="updateTicketStatus(selectedTicket, 'STUDIED')">STUDIED</a></li>
-										<li><a class="dropdown-item" href="#" v-if="selectedTicket.status != 'IN_PROGRESS'" @click="updateTicketStatus(selectedTicket, 'IN_PROGRESS')">IN PROGRESS</a></li>
-										<li><a class="dropdown-item" href="#" v-if="selectedTicket.status != 'DONE'" @click="updateTicketStatus(selectedTicket, 'DONE')">DONE</a></li>
-										<li><a class="dropdown-item" href="#" v-if="selectedTicket.status != 'REJECTED'" @click="updateTicketStatus(selectedTicket, 'REJECTED')">REJECTED</a></li>
+								<div class="list-group">
+									<a href="#" class="list-group-item d-flex justify-content-between align-items-start" :class="{'list-group-item active': selectedTicket != null && ticket.id == selectedTicket.id}" v-for="ticket of selectedPlan.tickets" @click="selectTicket(ticket)" draggable="true" @dragstart="draggedTicket = ticket" @drop="insertTicketToPlan(selectedPlan, draggedTicket, ticket)" @dragover.prevent="">
+										<i class="bi bi-bug" v-if="ticket.type == 'ISSUE'"></i><i class="bi bi-tools" v-if="ticket.type == 'FEATURE'"></i>
+										<div class="ms-4 me-auto">
+											<div class="fw-bold">#{{ticket.id}} {{ticket.title}}</div>
+											{{ticket.summary}}
+										</div>
+										<span class="badge rounded-pill" :class="{ 'bg-primary': ticket.status == 'OPEN', 'bg-info': ticket.status == 'STUDIED', 'bg-success': ticket.status == 'IN_PROGRESS', 'bg-secondary': ticket.status == 'DONE' || ticket.status == 'REJECTED'}">{{ticket.status}}</span>
+									</a>
+								</div>
+							</div>
+						</template>
+						<template v-slot:right>
+							<div id="ticketSlot" class="ms-2 overflow-hidden d-flex flex-column" :class="{'expanded': expandedTicket}" v-if="selectedTicket">
+								<h3 class="d-flex align-items-start">
+									<span class="me-4"><i class="bi bi-bug" v-if="selectedTicket.type == 'ISSUE'"></i><i class="bi bi-tools" v-if="selectedTicket.type == 'FEATURE'"></i></span> 
+									<div class="flex-grow-1 editable">
+										<span v-if="!editedTitleTicket" @click="editedTitleTicket = selectedTicket">#{{selectedTicket.id}} {{selectedTicket.title}}</span>
+										<input class="fs-3 d-block border w-100" style="all: unset;" v-model="editedTitleTicket.title" @blur="updateTicket(editedTitleTicket), editedTitleTicket = null" @keyup.enter="updateTicket(editedTitleTicket), editedTitleTicket = null" v-else v-focus/>
+										<a class="editor link-secondary ms-2 fs-6 align-middle" href="#" v-if="!editedTitleTicket" @click="editedTitleTicket = selectedTicket"><i class="bi bi-pencil-fill"></i></a>
+									</div>
+									<div class="dropdown">
+										<button class="btn dropdown-toggle text-white mx-3" :class="{ 'bg-primary': selectedTicket.status == 'OPEN', 'bg-info': selectedTicket.status == 'STUDIED', 'bg-success': selectedTicket.status == 'IN_PROGRESS', 'bg-secondary': selectedTicket.status == 'DONE' || selectedTicket.status == 'REJECTED'}" type="button" id="ticketStatusDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">{{selectedTicket.status}}</button>
+										<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="ticketStatusDropdownButton">
+											<li><a class="dropdown-item" href="#" v-if="selectedTicket.status != 'OPEN'" @click="updateTicketStatus(selectedTicket, 'OPEN')">OPEN</a></li>
+											<li><a class="dropdown-item" href="#" v-if="selectedTicket.status != 'STUDIED'" @click="updateTicketStatus(selectedTicket, 'STUDIED')">STUDIED</a></li>
+											<li><a class="dropdown-item" href="#" v-if="selectedTicket.status != 'IN_PROGRESS'" @click="updateTicketStatus(selectedTicket, 'IN_PROGRESS')">IN PROGRESS</a></li>
+											<li><a class="dropdown-item" href="#" v-if="selectedTicket.status != 'DONE'" @click="updateTicketStatus(selectedTicket, 'DONE')">DONE</a></li>
+											<li><a class="dropdown-item" href="#" v-if="selectedTicket.status != 'REJECTED'" @click="updateTicketStatus(selectedTicket, 'REJECTED')">REJECTED</a></li>
+										</ul>
+									</div>
+									<a class="link-secondary" href="#" @click="expandedTicket = !expandedTicket"><i class="bi bi-arrows-angle-expand" v-if="!expandedTicket"></i><i class="bi bi-arrows-angle-contract" v-else></i></a>
+								</h3>
+								<div class="flex-grow-1 pe-3 overflow-hidden d-flex flex-column">
+									<p class="editable" >
+										<span v-if="!editedSummaryTicket" class="p-0 m-0 d-inline-block" style="border: 1px solid transparent;">{{selectedTicket.summary}}</span>
+										<input class="d-block border w-100" style="all: unset;" v-model="editedSummaryTicket.summary" @blur="updateTicket(editedSummaryTicket), editedSummaryTicket = null" @keyup.enter="updateTicket(editedSummaryTicket), editedSummaryTicket = null" v-else v-focus/>
+										<a class="editor link-secondary ms-2 fs-6" href="#" v-if="!editedSummaryTicket" @click="editedSummaryTicket = selectedTicket"><i class="bi bi-pencil-fill"></i></a>
+									</p>
+									<h5 class="editable border-bottom">
+										<span>Description</span>
+										<a class="editor link-secondary mx-2 fs-6 d-inline-block" href="#" v-if="!editedDescriptionTicket" @click="editedDescriptionTicket = selectedTicket"><i class="bi bi-pencil-fill"></i></a>
+									</h5>
+									<div class="collapse" id="ticketDescriptionCollapse" aria-expanded="false" v-if="!editedDescriptionTicket && selectedTicket.description" v-if="selectedTicket.description">
+										<div style="border: 1px solid transparent;" v-html="renderedDescriptionTicket"></div>
+									</div>
+									<a role="button" class="ticketDescriptionCollapser collapsed" data-bs-toggle="collapse" href="#ticketDescriptionCollapse" aria-expanded="false" aria-controls="ticketDescriptionCollapse" v-if="!editedDescriptionTicket && selectedTicket.description"></a>
+									<div class="d-flex flex-column mb-2" v-if="editedDescriptionTicket">
+										<textarea class="form-control w-auto m-1" style="height: 50vh;" v-model="editedDescriptionTicket.description" v-markdown:update="{save(value) {editedDescriptionTicket.description = value; updateTicket(editedDescriptionTicket); editedDescriptionTicket = null;}}"></textarea>
+									</div>
+									<ul class="nav nav-tabs mt-4">
+										<li class="nav-item editable" v-for="note in selectedTicket.notes">
+											<button class="nav-link pe-2 text-start" :class="{'active': selectedTicketNote && note.index == selectedTicketNote.index}" type="button" role="tab" @click="selectTicketNote(note)">
+												<span v-if="!editedTitleTicketNote || editedTitleTicketNote.index !== note.index">{{note.title}}</span>
+												<input class="d-inline-block border me-2" style="all: unset;" v-model="editedTitleTicketNote.title" @blur="updateTicketNote(editedTitleTicketNote), editedTitleTicketNote = null" @keyup.enter="updateTicketNote(editedTitleTicketNote), editedTitleTicketNote = null" v-else v-focus/>
+												<span class="editor link-secondary fs-6 mx-2" v-if="!editedTitleTicketNote || editedTitleTicketNote.index !== note.index" @click.stop="editedTitleTicketNote = note"><i class="bi bi-pencil-fill"></i></span>
+												<a type="button" class="btn-sm btn-close p-2 align-middle" aria-label="Close" href="#" @click.stop="deleteTicketNote(note)"></a>
+											</button>
+										</li>
+										<li class="nav-item ms-3">
+											<button class="nav-link border text-secondary" type="button" role="tab" @click="createTicketNote({'ticketId':selectedTicket.id, 'title':'Note ' + selectedTicket.notes.length, 'content':''})">
+												<a type="button" class="btn-sm btn-add p-2 align-middle" aria-label="Add" href="#"></a>
+											</button>
+										</li>
 									</ul>
-								</div>
-								<a class="link-secondary" href="#" @click="expandedTicket = !expandedTicket"><i class="bi bi-arrows-angle-expand" v-if="!expandedTicket"></i><i class="bi bi-arrows-angle-contract" v-else></i></a>
-							</h3>
-							<div class="flex-grow-1 pe-3 overflow-hidden d-flex flex-column">
-								<p class="editable" >
-									<span v-if="!editedSummaryTicket" class="p-0 m-0 d-inline-block" style="border: 1px solid transparent;">{{selectedTicket.summary}}</span>
-									<input class="d-block border w-100" style="all: unset;" v-model="editedSummaryTicket.summary" @blur="updateTicket(editedSummaryTicket), editedSummaryTicket = null" @keyup.enter="updateTicket(editedSummaryTicket), editedSummaryTicket = null" v-else v-focus/>
-									<a class="editor link-secondary ms-2 fs-6" href="#" v-if="!editedSummaryTicket" @click="editedSummaryTicket = selectedTicket"><i class="bi bi-pencil-fill"></i></a>
-								</p>
-								<h5 class="editable border-bottom">
-									<span>Description</span>
-									<a class="editor link-secondary mx-2 fs-6 d-inline-block" href="#" v-if="!editedDescriptionTicket" @click="editedDescriptionTicket = selectedTicket"><i class="bi bi-pencil-fill"></i></a>
-								</h5>
-								<div class="collapse" id="ticketDescriptionCollapse" aria-expanded="false" v-if="!editedDescriptionTicket && selectedTicket.description" v-if="selectedTicket.description">
-									<div style="border: 1px solid transparent;" v-html="renderedDescriptionTicket"></div>
-								</div>
-								<a role="button" class="ticketDescriptionCollapser collapsed" data-bs-toggle="collapse" href="#ticketDescriptionCollapse" aria-expanded="false" aria-controls="ticketDescriptionCollapse" v-if="!editedDescriptionTicket && selectedTicket.description"></a>
-								<div class="d-flex flex-column mb-2" v-if="editedDescriptionTicket">
-									<textarea class="form-control w-auto m-1" style="height: 50vh;" v-model="editedDescriptionTicket.description" v-markdown:update="{save(value) {editedDescriptionTicket.description = value; updateTicket(editedDescriptionTicket); editedDescriptionTicket = null;}}"></textarea>
-								</div>
-								<ul class="nav nav-tabs mt-4">
-									<li class="nav-item editable" v-for="note in selectedTicket.notes">
-										<button class="nav-link pe-2 text-start" :class="{'active': selectedTicketNote && note.index == selectedTicketNote.index}" type="button" role="tab" @click="selectTicketNote(note)">
-											<span v-if="!editedTitleTicketNote || editedTitleTicketNote.index !== note.index">{{note.title}}</span>
-											<input class="d-inline-block border me-2" style="all: unset;" v-model="editedTitleTicketNote.title" @blur="updateTicketNote(editedTitleTicketNote), editedTitleTicketNote = null" @keyup.enter="updateTicketNote(editedTitleTicketNote), editedTitleTicketNote = null" v-else v-focus/>
-											<span class="editor link-secondary fs-6 mx-2" v-if="!editedTitleTicketNote || editedTitleTicketNote.index !== note.index" @click.stop="editedTitleTicketNote = note"><i class="bi bi-pencil-fill"></i></span>
-											<a type="button" class="btn-sm btn-close p-2 align-middle" aria-label="Close" href="#" @click.stop="deleteTicketNote(note)"></a>
-										</button>
-									</li>
-									<li class="nav-item ms-3">
-										<button class="nav-link border text-secondary" type="button" role="tab" @click="createTicketNote({'ticketId':selectedTicket.id, 'title':'Note ' + selectedTicket.notes.length, 'content':''})">
-											<a type="button" class="btn-sm btn-add p-2 align-middle" aria-label="Add" href="#"></a>
-										</button>
-									</li>
-								</ul>
-								<div class="editable editable-grow border border-top-0 position-relative flex-grow-1 d-flex flex-column overflow-hidden" v-if="selectedTicketNote">
-									<div class="h-100 p-2 overflow-auto" v-if="!editedContentTicketNote" v-scroll="selectedTicketNote" v-on:scroll.passive="evt => {selectedTicketNote.scrollRatio = evt.target.scrollTop / evt.target.scrollTopMax;}">
-										<div v-html="renderedContentTicketNote"></div>
+									<div class="editable editable-grow border border-top-0 position-relative flex-grow-1 d-flex flex-column overflow-hidden" v-if="selectedTicketNote">
+										<div class="h-100 p-2 overflow-auto" v-if="!editedContentTicketNote" v-scroll="selectedTicketNote" v-on:scroll.passive="evt => {selectedTicketNote.scrollRatio = evt.target.scrollTop / evt.target.scrollTopMax;}">
+											<div v-html="renderedContentTicketNote"></div>
+										</div>
+										<textarea class="form-control h-100" v-model="editedContentTicketNote.content" v-else v-markdown:update="{scrollTarget:selectedTicketNote, save(value) {editedContentTicketNote.content = value; updateTicketNote(editedContentTicketNote); editedContentTicketNote = null;}}"></textarea>
+										<a class="editor link-secondary m-4 fs-4 align-middle position-absolute top-0 end-0" href="#" v-if="!editedContentTicketNote" @click="editedContentTicketNote = selectedTicketNote"><i class="bi bi-pencil-fill"></i></a>
 									</div>
-									<textarea class="form-control h-100" v-model="editedContentTicketNote.content" v-else v-markdown:update="{scrollTarget:selectedTicketNote, save(value) {editedContentTicketNote.content = value; updateTicketNote(editedContentTicketNote); editedContentTicketNote = null;}}"></textarea>
-									<a class="editor link-secondary m-4 fs-4 align-middle position-absolute top-0 end-0" href="#" v-if="!editedContentTicketNote" @click="editedContentTicketNote = selectedTicketNote"><i class="bi bi-pencil-fill"></i></a>
 								</div>
 							</div>
-						</div>
-					</div>
+						</template>
+					</split-panel>
 				</div>
 			</main>
 			
@@ -223,7 +238,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" v-on:click="creatingPlan = false">Cancel</button>
 							<button type="submit" class="btn btn-primary">Create</button>
 						</div>
 					</form>
@@ -259,19 +274,19 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 								<input type="text" class="form-control" id="createTicketSummary" v-model="createTicketSummary" aria-describedby="createTicketSummary" required />
 								<div class="invalid-feedback">Please provide a summary.</div>
 							</div>
-							<div class="mb-3">
+							<div class="mb-3" v-if="creatingTicket">
 								<label for="createTicketDescription" class="form-label">Description</label>
 								<textarea class="form-control" rows="15" id="createTicketDescription" v-model="createTicketDescription" v-markdown:create="{save(value) {createTicketDescription = value;}}"></textarea>
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" v-on:click="creatingTicket = false">Cancel</button>
 							<button type="submit" class="btn btn-primary">Create</button>
 						</div>
 					</form>
 				</div>
 			</div>
 		</div>
-		<script src="/static/js/script.js"></script>
+		<script src="/static/js/script.js" type="module"></script>
 	</body>
 </html>
