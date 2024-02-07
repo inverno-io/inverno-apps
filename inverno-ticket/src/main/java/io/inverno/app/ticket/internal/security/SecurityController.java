@@ -18,6 +18,7 @@ package io.inverno.app.ticket.internal.security;
 import io.inverno.core.annotation.Bean;
 import io.inverno.mod.base.resource.MediaTypes;
 import io.inverno.mod.http.base.Method;
+import io.inverno.mod.http.base.NotFoundException;
 import io.inverno.mod.security.accesscontrol.AccessController;
 import io.inverno.mod.security.http.context.SecurityContext;
 import io.inverno.mod.security.identity.Identity;
@@ -44,6 +45,6 @@ public class SecurityController {
 	 */
 	@WebRoute( path = "/identity", method = Method.GET, produces = MediaTypes.APPLICATION_JSON )
 	public Identity identity(SecurityContext<? extends Identity, ? extends AccessController> securityContext) {
-		return securityContext.getIdentity().get();
+		return securityContext.getIdentity().orElseThrow(() -> new NotFoundException("Identify not found"));
 	}
 }
