@@ -19,7 +19,7 @@ import io.inverno.core.annotation.NestedBean;
 import io.inverno.mod.boot.BootConfiguration;
 import io.inverno.mod.configuration.Configuration;
 import io.inverno.mod.redis.lettuce.LettuceRedisClientConfiguration;
-import io.inverno.mod.web.WebConfiguration;
+import io.inverno.mod.web.server.WebServerConfiguration;
 import java.net.URI;
 
 /**
@@ -50,7 +50,7 @@ public interface TicketAppConfiguration {
 	 * @return the web module configuration
 	 */
 	@NestedBean
-	WebConfiguration web();
+	WebServerConfiguration web();
 	
 	/**
 	 * <p>

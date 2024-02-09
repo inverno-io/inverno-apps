@@ -21,7 +21,11 @@ import io.inverno.mod.base.resource.Resource;
 import io.inverno.mod.base.resource.ResourceService;
 import io.inverno.mod.http.base.ExchangeContext;
 import io.inverno.mod.http.base.Method;
-import io.inverno.mod.web.*;
+import io.inverno.mod.web.server.OpenApiRoutesConfigurer;
+import io.inverno.mod.web.server.StaticHandler;
+import io.inverno.mod.web.server.WebJarsRoutesConfigurer;
+import io.inverno.mod.web.server.WebRoutable;
+import io.inverno.mod.web.server.WebRoutesConfigurer;
 
 /**
  * <p>
