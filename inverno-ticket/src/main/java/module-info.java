@@ -27,7 +27,7 @@
 module io.inverno.app.ticket {
 	requires io.inverno.mod.boot;
 	requires io.inverno.mod.redis.lettuce;
-	requires io.inverno.mod.web;
+	requires io.inverno.mod.web.server;
 	requires io.inverno.mod.security.http;
 	requires io.inverno.mod.security.jose;
 
