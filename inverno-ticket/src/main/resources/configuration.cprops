@@ -6,9 +6,9 @@ io.inverno.app.ticket.ticketAppConfiguration {
 		web.http_server {
 			server_port = 8443
 			tls_enabled = true
-			key_store = "module://io.inverno.app.ticket/keystore.jks"
-			key_alias = "selfsigned"
-			key_store_password = "changeit"
+			tls_key_store = "module://io.inverno.app.ticket/keystore.jks"
+			tls_key_alias = "selfsigned"
+			tls_key_store_password = "changeit"
 		}
 	}
 }
