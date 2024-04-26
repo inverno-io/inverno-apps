@@ -179,9 +179,9 @@ public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<P
 	public void configure(ErrorWebRouter<ExchangeContext> errorRouter) {
 		errorRouter
 			.intercept()
-			.path("/")
-			.error(UnauthorizedException.class)
-			.interceptor(new FormAuthenticationErrorInterceptor<>())
+				.path("/")
+				.error(UnauthorizedException.class)
+				.interceptor(new FormAuthenticationErrorInterceptor<>())
 			.applyInterceptors(); // We must apply interceptors to intercept white labels error routes which are already defined
 	}
 }

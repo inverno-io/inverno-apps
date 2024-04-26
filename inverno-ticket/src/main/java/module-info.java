@@ -31,6 +31,8 @@ module io.inverno.app.ticket {
 	requires io.inverno.mod.security.http;
 	requires io.inverno.mod.security.jose;
 
+	requires com.fasterxml.jackson.datatype.jsr310;
+
 	requires org.apache.logging.log4j;
 	requires org.apache.logging.log4j.layout.template.json;
 
