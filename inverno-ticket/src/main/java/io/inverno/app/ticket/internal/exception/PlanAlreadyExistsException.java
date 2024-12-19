@@ -28,41 +28,21 @@ public class PlanAlreadyExistsException extends TicketException {
 	
 	private final long planId;
 	
-	/**
-	 * 
-	 * @param planId 
-	 */
 	public PlanAlreadyExistsException(long planId) {
 		super(String.format(MESSAGE_PATTERN, planId));
 		this.planId = planId;
 	}
 
-	/**
-	 * 
-	 * @param planId
-	 * @param cause 
-	 */
 	public PlanAlreadyExistsException(long planId, Throwable cause) {
 		super(String.format(MESSAGE_PATTERN, planId), cause);
 		this.planId = planId;
 	}
 
-	/**
-	 * 
-	 * @param planId
-	 * @param cause
-	 * @param enableSuppression
-	 * @param writableStackTrace 
-	 */
 	public PlanAlreadyExistsException(long planId, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(String.format(MESSAGE_PATTERN, planId), cause, enableSuppression, writableStackTrace);
 		this.planId = planId;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public long getPlanId() {
 		return planId;
 	}

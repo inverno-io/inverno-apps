@@ -21,45 +21,47 @@ import io.inverno.mod.base.resource.Resource;
 import io.inverno.mod.base.resource.ResourceService;
 import io.inverno.mod.http.base.ExchangeContext;
 import io.inverno.mod.http.base.Method;
+import io.inverno.mod.http.server.HttpAccessLogsInterceptor;
+import io.inverno.mod.web.server.ErrorWebRouteInterceptor;
+import io.inverno.mod.web.server.ErrorWebRouter;
 import io.inverno.mod.web.server.OpenApiRoutesConfigurer;
 import io.inverno.mod.web.server.StaticHandler;
 import io.inverno.mod.web.server.WebJarsRoutesConfigurer;
-import io.inverno.mod.web.server.WebRoutable;
-import io.inverno.mod.web.server.WebRoutesConfigurer;
+import io.inverno.mod.web.server.WebRouteInterceptor;
+import io.inverno.mod.web.server.WebRouter;
+import io.inverno.mod.web.server.WhiteLabelErrorRoutesConfigurer;
 
 /**
  * <p>
- * Web routes configurer used to configure routes to static resources: OpenAPI generated specifications, WebJars, Web root.
+ * Web server configurer used to configure access and error logging, error routes and static resources routes: OpenAPI specifications, WebJars, Web root.
  * </p>
- * 
+ *
  * @author <a href="mailto:jeremy.kuhn@inverno.io">Jeremy Kuhn</a>
  */
 @Bean(visibility = Bean.Visibility.PRIVATE)
-public class StaticWebRoutesConfigurer implements WebRoutesConfigurer<ExchangeContext> {
+public class WebServerConfigurer implements WebRouteInterceptor.Configurer<ExchangeContext>, WebRouter.Configurer<ExchangeContext>, ErrorWebRouteInterceptor.Configurer<ExchangeContext>, ErrorWebRouter.Configurer<ExchangeContext> {
 
 	private final TicketAppConfiguration configuration;
-	
+
 	private final ResourceService resourceService;
-	
+
 	private final Resource homeResource;
-	
-	/**
-	 * 
-	 * @param configuration
-	 * @param resourceService 
-	 */
-	public StaticWebRoutesConfigurer(TicketAppConfiguration configuration, ResourceService resourceService) {
+
+	public WebServerConfigurer(TicketAppConfiguration configuration, ResourceService resourceService) {
 		this.configuration = configuration;
 		this.resourceService = resourceService;
 		this.homeResource = this.resourceService.getResource(this.configuration.web_root()).resolve("index.html");
 	}
-	
-	/**
-	 * 
-	 * @param routes
-	 */
+
 	@Override
-	public void configure(WebRoutable<ExchangeContext, ?> routes) {
+	public WebRouteInterceptor<ExchangeContext> configure(WebRouteInterceptor<ExchangeContext> interceptors) {
+		return interceptors
+			.intercept()
+				.interceptor(new HttpAccessLogsInterceptor<>());
+	}
+
+	@Override
+	public void configure(WebRouter<ExchangeContext> routes) {
 		routes
 			// OpenAPI specifications
 			.configureRoutes(new OpenApiRoutesConfigurer<>(this.resourceService, true))
@@ -75,6 +77,19 @@ public class StaticWebRoutesConfigurer implements WebRoutesConfigurer<ExchangeCo
 				.path("/", true)
 				.method(Method.GET)
 				.handler(exchange -> exchange.response().body().resource().value(this.homeResource));
+	}
 
+
+	@Override
+	public ErrorWebRouteInterceptor<ExchangeContext> configure(ErrorWebRouteInterceptor<ExchangeContext> errorInterceptors) {
+		return errorInterceptors
+			.interceptError()
+				.interceptor(new HttpAccessLogsInterceptor<>());
+	}
+
+	@Override
+	public void configure(ErrorWebRouter<ExchangeContext> errorRoutes) {
+		errorRoutes
+			.configureErrorRoutes(new WhiteLabelErrorRoutesConfigurer<>());
 	}
 }

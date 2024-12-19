@@ -24,44 +24,21 @@ package io.inverno.app.ticket.internal.exception;
  */
 public class TicketException extends RuntimeException {
 
-	/**
-	 * 
-	 */
 	public TicketException() {
 	}
 
-	/**
-	 * 
-	 * @param message 
-	 */
 	public TicketException(String message) {
 		super(message);
 	}
 
-	/**
-	 * 
-	 * @param message
-	 * @param cause 
-	 */
 	public TicketException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	/**
-	 * 
-	 * @param cause 
-	 */
 	public TicketException(Throwable cause) {
 		super(cause);
 	}
 
-	/**
-	 * 
-	 * @param message
-	 * @param cause
-	 * @param enableSuppression
-	 * @param writableStackTrace 
-	 */
 	public TicketException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}

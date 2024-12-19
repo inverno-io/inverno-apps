@@ -16,14 +16,19 @@
 package io.inverno.app.ticket.internal.security;
 
 import io.inverno.core.annotation.Bean;
+import io.inverno.mod.base.reflect.Types;
 import io.inverno.mod.base.resource.MediaTypes;
 import io.inverno.mod.http.base.ExchangeContext;
 import io.inverno.mod.http.base.ForbiddenException;
 import io.inverno.mod.http.base.Method;
 import io.inverno.mod.http.base.UnauthorizedException;
-import io.inverno.mod.ldap.LDAPClient;
 import io.inverno.mod.security.accesscontrol.GroupsRoleBasedAccessControllerResolver;
 import io.inverno.mod.security.accesscontrol.RoleBasedAccessController;
+import io.inverno.mod.security.authentication.LoginCredentialsMatcher;
+import io.inverno.mod.security.authentication.user.User;
+import io.inverno.mod.security.authentication.user.UserAuthentication;
+import io.inverno.mod.security.authentication.user.UserAuthenticator;
+import io.inverno.mod.security.authentication.user.UserRepository;
 import io.inverno.mod.security.http.AccessControlInterceptor;
 import io.inverno.mod.security.http.SecurityInterceptor;
 import io.inverno.mod.security.http.context.InterceptingSecurityContext;
@@ -41,79 +46,90 @@ import io.inverno.mod.security.http.login.LogoutSuccessHandler;
 import io.inverno.mod.security.http.token.CookieTokenCredentialsExtractor;
 import io.inverno.mod.security.http.token.CookieTokenLoginSuccessHandler;
 import io.inverno.mod.security.http.token.CookieTokenLogoutSuccessHandler;
+import io.inverno.mod.security.identity.PersonIdentity;
+import io.inverno.mod.security.identity.UserIdentityResolver;
 import io.inverno.mod.security.jose.jwa.OCTAlgorithm;
 import io.inverno.mod.security.jose.jws.JWSAuthentication;
 import io.inverno.mod.security.jose.jws.JWSAuthenticator;
 import io.inverno.mod.security.jose.jws.JWSService;
-import io.inverno.mod.security.ldap.authentication.LDAPAuthentication;
-import io.inverno.mod.security.ldap.authentication.LDAPAuthenticator;
-import io.inverno.mod.security.ldap.identity.LDAPIdentity;
-import io.inverno.mod.security.ldap.identity.LDAPIdentityResolver;
-import io.inverno.mod.web.server.ErrorWebRouter;
-import io.inverno.mod.web.server.ErrorWebRouterConfigurer;
-import io.inverno.mod.web.server.WebInterceptable;
-import io.inverno.mod.web.server.WebInterceptorsConfigurer;
-import io.inverno.mod.web.server.WebRoutable;
-import io.inverno.mod.web.server.WebRoutesConfigurer;
+import io.inverno.mod.web.server.ErrorWebRouteInterceptor;
+import io.inverno.mod.web.server.WebRouteInterceptor;
+import io.inverno.mod.web.server.WebRouter;
 import io.inverno.mod.web.server.annotation.WebRoute;
 import io.inverno.mod.web.server.annotation.WebRoutes;
-import reactor.core.publisher.Mono;
-
 import java.util.List;
+import reactor.core.publisher.Mono;
 
 /**
  * <p>
- * The Web configurer used to configure application security.
+ * Web server configurer used to configure application security.
  * </p>
  *
  * @author <a href="mailto:jeremy.kuhn@inverno.io">Jeremy Kuhn</a>
  */
+@Bean( visibility = Bean.Visibility.PRIVATE )
 @WebRoutes({
 	@WebRoute(path = { "/login" }, method = { Method.GET }),
 	@WebRoute(path = { "/login" }, method = { Method.POST }),
-	@WebRoute(path = { "/logout" }, method = { Method.GET }, produces = { "application/json" }),
+	@WebRoute(path = { "/logout" }, method = { Method.GET }, produces = { "application/json" })
 })
-@Bean( visibility = Bean.Visibility.PRIVATE )
-public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<LDAPIdentity, RoleBasedAccessController>>, WebInterceptorsConfigurer<InterceptingSecurityContext<LDAPIdentity, RoleBasedAccessController>>, ErrorWebRouterConfigurer<ExchangeContext> {
+public class SecurityConfigurer implements WebRouteInterceptor.Configurer<InterceptingSecurityContext<PersonIdentity, RoleBasedAccessController>>, WebRouter.Configurer<SecurityContext<PersonIdentity, RoleBasedAccessController>>, ErrorWebRouteInterceptor.Configurer<ExchangeContext> {
 
-	/**
-	 * The LDAP client.
-	 */
-	private final LDAPClient ldapClient;
-
-	/**
-	 * The JWS service
-	 */
+	private final UserRepository<PersonIdentity, User<PersonIdentity>> userRepository;
 	private final JWSService jwsService;
 
-	/**
-	 * <p>
-	 * Creates the security configurer.
-	 * </p>
-	 *
-	 * @param ldapClient
-	 * @param jwsService
-	 */
-	public SecurityConfigurer(LDAPClient ldapClient, JWSService jwsService) {
-		this.ldapClient = ldapClient;
+	public SecurityConfigurer(UserRepository<PersonIdentity, User<PersonIdentity>> userRepository, JWSService jwsService) {
+		this.userRepository = userRepository;
 		this.jwsService = jwsService;
 	}
 
 	@Override
-	public void configure(WebRoutable<SecurityContext<LDAPIdentity, RoleBasedAccessController>, ?> routes) {
+	public WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, RoleBasedAccessController>> configure(WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, RoleBasedAccessController>> interceptors) {
+		return interceptors
+			.intercept()                                                                                  // 1
+				.path("/")
+				.path("/api/**")
+				.path("/static/**")
+				.path("/webjars/**")
+				.path("/open-api/**")
+				.path("/logout")
+				.interceptors(List.of(
+					SecurityInterceptor.of(                                                               // 2
+						new CookieTokenCredentialsExtractor(),                                            // 3
+						new JWSAuthenticator<UserAuthentication<PersonIdentity>>(                         // 4
+							this.jwsService,
+							Types.type(UserAuthentication.class).type(PersonIdentity.class).and().build()
+						)
+						.failOnDenied()                                                                   // 5
+						.map(jwsAuthentication -> jwsAuthentication.getJws().getPayload()),               // 6
+						new UserIdentityResolver<>(),
+						new GroupsRoleBasedAccessControllerResolver()
+					),
+					AccessControlInterceptor.authenticated()                                              // 7
+				))
+			.intercept()
+				.path("/open-api/**")
+				.interceptor(AccessControlInterceptor.verify(securityContext -> securityContext.getAccessController()
+					.orElseThrow(() -> new ForbiddenException("Missing access controller"))
+					.hasRole("developer")
+				));
+	}
+
+	@Override
+	public void configure(WebRouter<SecurityContext<PersonIdentity, RoleBasedAccessController>> routes) {
 		routes
-			.route()
+			.route()                                                                                                                     // 1
 				.path("/login")
 				.method(Method.GET)
 				.handler(new FormLoginPageHandler<>())
-			.route()
+			.route()                                                                                                                     // 2
 				.path("/login")
 				.method(Method.POST)
-				.handler(new LoginActionHandler<>(
-					new FormCredentialsExtractor(),
-					new LDAPAuthenticator(this.ldapClient, "dc=inverno,dc=io")
-						.failOnDenied()
-						.flatMap(authentication -> this.jwsService.builder(LDAPAuthentication.class)
+				.handler(new LoginActionHandler<>(                                                                                       // 3
+					new FormCredentialsExtractor(),                                                                                      // 4
+					new UserAuthenticator<>(this.userRepository, new LoginCredentialsMatcher<>())                                        // 5
+						.failOnDenied()                                                                                                  // 6
+						.flatMap(authentication -> this.jwsService.<UserAuthentication<PersonIdentity>>builder(UserAuthentication.class) // 7
 							.header(header -> header
 								.keyId("tkt")
 								.algorithm(OCTAlgorithm.HS512.getAlgorithm())
@@ -122,15 +138,15 @@ public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<L
 							.build(MediaTypes.APPLICATION_JSON)
 							.map(JWSAuthentication::new)
 						),
-					LoginSuccessHandler.of(
+					LoginSuccessHandler.of(                                                                                              // 8
 						new CookieTokenLoginSuccessHandler<>(),
 						new RedirectLoginSuccessHandler<>()
 					),
-					new RedirectLoginFailureHandler<>()
+					new RedirectLoginFailureHandler<>()                                                                                  // 9
 				))
 			.route()
 				.path("/logout")
-				.produces(MediaTypes.APPLICATION_JSON)
+				.produce(MediaTypes.APPLICATION_JSON)
 				.handler(new LogoutActionHandler<>(
 					authentication -> Mono.empty(),
 					LogoutSuccessHandler.of(
@@ -141,44 +157,11 @@ public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<L
 	}
 
 	@Override
-	public void configure(WebInterceptable<InterceptingSecurityContext<LDAPIdentity, RoleBasedAccessController>, ?> interceptors) {
-		interceptors
-			.intercept()
-				.path("/")
-				.path("/api/**")
-				.path("/static/**")
-				.path("/webjars/**")
-				.path("/open-api/**")
-				.path("/logout")
-				.interceptors(List.of(
-					SecurityInterceptor.of(
-						new CookieTokenCredentialsExtractor(),
-						new JWSAuthenticator<>(
-							this.jwsService,
-							LDAPAuthentication.class
-						)
-						.failOnDenied()
-						.map(jwsAuthentication -> jwsAuthentication.getJws().getPayload()),
-						new LDAPIdentityResolver(this.ldapClient),
-						new GroupsRoleBasedAccessControllerResolver()
-					),
-					AccessControlInterceptor.authenticated()
-				))
-				.intercept()
-					.path("/open-api/**")
-					.interceptor(AccessControlInterceptor.verify(securityContext -> securityContext.getAccessController()
-						.orElseThrow(() -> new ForbiddenException("Missing access controller"))
-						.hasRole("developer")
-					));
-	}
-
-	@Override
-	public void configure(ErrorWebRouter<ExchangeContext> errorRouter) {
-		errorRouter
-			.intercept()
+	public ErrorWebRouteInterceptor<ExchangeContext> configure(ErrorWebRouteInterceptor<ExchangeContext> errorInterceptors) {
+		return errorInterceptors
+			.interceptError()
 				.path("/")
 				.error(UnauthorizedException.class)
-				.interceptor(new FormAuthenticationErrorInterceptor<>())
-			.applyInterceptors(); // We must apply interceptors to intercept white labels error routes which are already defined
+				.interceptor(new FormAuthenticationErrorInterceptor<>());
 	}
 }

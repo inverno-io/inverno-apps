@@ -29,26 +29,13 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class Note {
 
 	private long ticketId;
-	
 	private Integer index;
-	
 	private String title;
-	
 	private String content;
 
-	/**
-	 * 
-	 */
 	public Note() {
 	}
 
-	/**
-	 * 
-	 * @param ticketId
-	 * @param index
-	 * @param title
-	 * @param content 
-	 */
 	public Note(long ticketId, Integer index, String title, String content) {
 		this.ticketId = ticketId;
 		this.index = index;
@@ -56,66 +43,34 @@ public class Note {
 		this.content = content;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public long getTicketId() {
 		return ticketId;
 	}
 
-	/**
-	 * 
-	 * @param ticketId 
-	 */
 	public void setTicketId(long ticketId) {
 		this.ticketId = ticketId;
 	}
 	
-	/**
-	 * 
-	 * @return 
-	 */
 	public Integer getIndex() {
 		return index;
 	}
 
-	/**
-	 * 
-	 * @param index 
-	 */
 	public void setIndex(Integer index) {
 		this.index = index;
 	}
 	
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * 
-	 * @param title 
-	 */
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getContent() {
 		return content;
 	}
 
-	/**
-	 * 
-	 * @param content 
-	 */
 	public void setContent(String content) {
 		this.content = content;
 	}

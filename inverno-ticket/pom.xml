@@ -43,24 +43,11 @@
 		</dependency>
 		<dependency>
 			<groupId>io.inverno.mod</groupId>
-			<artifactId>inverno-ldap</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.inverno.mod</groupId>
 			<artifactId>inverno-security-http</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.inverno.mod</groupId>
 			<artifactId>inverno-security-jose</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.inverno.mod</groupId>
-			<artifactId>inverno-security-ldap</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 
 		<dependency>
@@ -93,7 +80,6 @@
 			<artifactId>simplemde</artifactId>
 			<version>1.11.2</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>swagger-ui</artifactId>
@@ -106,11 +92,6 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-layout-template-json</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-transport-classes-epoll</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.netty</groupId>
@@ -157,7 +138,24 @@
 					<groupId>io.inverno.tool</groupId>
 					<artifactId>inverno-maven-plugin</artifactId>
 					<configuration>
-						<vmOptions>--add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
+						<vmOptions>--add-opens reactor.core/reactor.core.publisher=lettuce.core --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64 -Dorg.apache.logging.log4j.simplelog.level=INFO -Dorg.apache.logging.log4j.level=INFO</vmOptions>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<compilerArgs>
+							<arg>--module-version=${project.version}</arg>
+							<arg>-Ainverno.web.generateOpenApiDefinition=true</arg>
+						</compilerArgs>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<argLine>--add-reads io.inverno.app.ticket=com.fasterxml.jackson.datatype.jsr310</argLine>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -165,48 +163,6 @@
 	</build>
 
 	<profiles>
-		<profile>
-			<id>debug</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>io.inverno.tool</groupId>
-						<artifactId>inverno-maven-plugin</artifactId>
-						<configuration>
-						<vmOptions>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>build-runtime</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>io.inverno.tool</groupId>
-						<artifactId>inverno-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>build-runtime</id>
-								<phase>package</phase>
-								<goals>
-									<goal>build-runtime</goal>
-								</goals>
-								<configuration>
-									<vm>server</vm>
-									<!-- jdk.crypto.ec: TLS, jdk.jdwp.agent: remote debug -->
-									<addModules>jdk.crypto.ec,jdk.jdwp.agent</addModules>
-									<archiveFormats>
-										<archiveFormat>zip</archiveFormat>
-									</archiveFormats>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 		<profile>
 			<id>release</id>
 			<build>
@@ -228,7 +184,7 @@
 									<launchers>
 										<launcher>
 											<name>inverno-ticket</name>
-											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
+											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
 										</launcher>
 									</launchers>
 									<archiveFormats>
@@ -242,7 +198,7 @@
 			</build>
 		</profile>
 		<profile>
-			<id>install-docker</id>
+			<id>install-image</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -263,11 +219,11 @@
 									<launchers>
 										<launcher>
 											<name>inverno-ticket</name>
-											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-opens org.apache.logging.log4j.core/org.apache.logging.log4j.core.jackson=com.fasterxml.jackson.databind --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
+											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
 										</launcher>
 									</launchers>
 									<volumes>
-										<volume>/opt/inverno-ticket/logs</volume>
+										<volume>/opt/ticket/logs</volume>
 									</volumes>
 								</configuration>
 							</execution>

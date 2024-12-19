@@ -29,19 +29,9 @@ public class NoteDto {
 	private String title;
 	private String content;
 	
-	/**
-	 * 
-	 */
 	public NoteDto() {
 	}
 
-	/**
-	 * 
-	 * @param ticketId
-	 * @param Index
-	 * @param title
-	 * @param content 
-	 */
 	public NoteDto(int ticketId, Integer Index, String title, String content) {
 		this.ticketId = ticketId;
 		this.Index = Index;
@@ -49,66 +39,34 @@ public class NoteDto {
 		this.content = content;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public long getTicketId() {
 		return ticketId;
 	}
 
-	/**
-	 * 
-	 * @param ticketId 
-	 */
 	public void setTicketId(long ticketId) {
 		this.ticketId = ticketId;
 	}
 	
-	/**
-	 * 
-	 * @return 
-	 */
 	public Integer getIndex() {
 		return Index;
 	}
 
-	/**
-	 * 
-	 * @param Index 
-	 */
 	public void setIndex(Integer Index) {
 		this.Index = Index;
 	}
 	
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * 
-	 * @param title 
-	 */
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getContent() {
 		return content;
 	}
 
-	/**
-	 * 
-	 * @param content 
-	 */
 	public void setContent(String content) {
 		this.content = content;
 	}

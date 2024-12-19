@@ -55,35 +55,16 @@ public class Ticket {
 	}
 	
 	private Long id;
-	
 	private Type type;
-	
 	private Status status;
-	
 	private ZonedDateTime creationDateTime;
-	
 	private String title;
-	
 	private String summary;
-	
 	private String description;
 
-	/**
-	 * 
-	 */
 	public Ticket() {
 	}
 
-	/**
-	 * 
-	 * @param id
-	 * @param type
-	 * @param status
-	 * @param title
-	 * @param summary
-	 * @param description
-	 * @param creationDateTime 
-	 */
 	public Ticket(Long id, Type type, Status status, String title, String summary, String description, ZonedDateTime creationDateTime) {
 		this.id = id;
 		this.type = type;
@@ -94,114 +75,58 @@ public class Ticket {
 		this.creationDateTime = creationDateTime;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public Long getId() {
 		return id;
 	}
 
-	/**
-	 * 
-	 * @param id 
-	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public Type getType() {
 		return type;
 	}
 
-	/**
-	 * 
-	 * @param type 
-	 */
 	public void setType(Type type) {
 		this.type = type;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public Status getStatus() {
 		return status;
 	}
 
-	/**
-	 * 
-	 * @param status 
-	 */
 	public void setStatus(Status status) {
 		this.status = status;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public ZonedDateTime getCreationDateTime() {
 		return creationDateTime;
 	}
 
-	/**
-	 * 
-	 * @param creationDateTime 
-	 */
 	public void setCreationDateTime(ZonedDateTime creationDateTime) {
 		this.creationDateTime = creationDateTime;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * 
-	 * @param title 
-	 */
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getSummary() {
 		return summary;
 	}
 
-	/**
-	 * 
-	 * @param summary 
-	 */
 	public void setSummary(String summary) {
 		this.summary = summary;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * 
-	 * @param description 
-	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}

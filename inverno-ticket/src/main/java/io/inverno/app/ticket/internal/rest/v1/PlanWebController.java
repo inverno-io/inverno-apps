@@ -15,12 +15,12 @@
  */
 package io.inverno.app.ticket.internal.rest.v1;
 
+import io.inverno.core.annotation.Bean;
 import io.inverno.app.ticket.internal.model.Plan;
 import io.inverno.app.ticket.internal.model.Ticket;
 import io.inverno.app.ticket.internal.rest.DtoMapper;
 import io.inverno.app.ticket.internal.rest.v1.dto.PlanDto;
 import io.inverno.app.ticket.internal.service.PlanService;
-import io.inverno.core.annotation.Bean;
 import io.inverno.mod.base.resource.MediaTypes;
 import io.inverno.mod.http.base.ForbiddenException;
 import io.inverno.mod.http.base.Method;
@@ -30,18 +30,17 @@ import io.inverno.mod.http.base.header.Headers;
 import io.inverno.mod.security.accesscontrol.RoleBasedAccessController;
 import io.inverno.mod.security.http.context.SecurityContext;
 import io.inverno.mod.security.identity.Identity;
+import io.inverno.mod.web.base.annotation.Body;
+import io.inverno.mod.web.base.annotation.FormParam;
+import io.inverno.mod.web.base.annotation.PathParam;
+import io.inverno.mod.web.base.annotation.QueryParam;
 import io.inverno.mod.web.server.WebExchange;
-import io.inverno.mod.web.server.annotation.Body;
-import io.inverno.mod.web.server.annotation.FormParam;
-import io.inverno.mod.web.server.annotation.PathParam;
-import io.inverno.mod.web.server.annotation.QueryParam;
 import io.inverno.mod.web.server.annotation.WebController;
 import io.inverno.mod.web.server.annotation.WebRoute;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.util.List;
 import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * <p>
@@ -57,11 +56,6 @@ public class PlanWebController {
 	private final PlanService planService;
 	private final DtoMapper<PlanDto, Plan> planDtoMapper;
 
-	/**
-	 *
-	 * @param planService
-	 * @param planDtoMapper
-	 */
 	public PlanWebController(PlanService planService, DtoMapper<PlanDto, Plan> planDtoMapper) {
 		this.planService = planService;
 		this.planDtoMapper = planDtoMapper;
@@ -122,7 +116,7 @@ public class PlanWebController {
 	public Mono<PlanDto> getPlan(@PathParam long planId, @QueryParam Optional<List<Ticket.Status>> statuses) {
 		return statuses.map(s -> this.planService.getPlan(planId, s)).orElse(this.planService.getPlan(planId))
 			.flatMap(this.planDtoMapper::toDto)
-			.switchIfEmpty(Mono.error(() -> new NotFoundException()));
+			.switchIfEmpty(Mono.error(NotFoundException::new));
 	}
 
 	/**
@@ -130,7 +124,6 @@ public class PlanWebController {
 	 *
 	 * @param planId the id of the plan to update
 	 * @param plan   the updated plan
-	 * @param securityContext
 	 *
 	 * @return the updated plan
 	 */
@@ -147,7 +140,7 @@ public class PlanWebController {
 				return this.planDtoMapper.toDomain(plan)
 					.flatMap(this.planService::savePlan)
 					.flatMap(this.planDtoMapper::toDto)
-					.switchIfEmpty(Mono.error(() -> new NotFoundException()));
+					.switchIfEmpty(Mono.error(NotFoundException::new));
 			});
 	}
 
@@ -155,7 +148,6 @@ public class PlanWebController {
 	 * Delete a plan.
 	 *
 	 * @param planId the id of the plan to delete
-	 * @param securityContext
 	 *
 	 * @return the deleted plan
 	 * @throws NotFoundException if there's no ticket with the specified id
@@ -171,7 +163,7 @@ public class PlanWebController {
 				}
 				return this.planService.removePlan(planId)
 					.flatMap(this.planDtoMapper::toDto)
-					.switchIfEmpty(Mono.error(() -> new NotFoundException()));
+					.switchIfEmpty(Mono.error(NotFoundException::new));
 			});
 	}
 
