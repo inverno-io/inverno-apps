@@ -41,6 +41,14 @@
 			<groupId>io.inverno.mod</groupId>
 			<artifactId>inverno-web-server</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.inverno.mod</groupId>
+			<artifactId>inverno-security-http</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.inverno.mod</groupId>
+			<artifactId>inverno-security-jose</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
