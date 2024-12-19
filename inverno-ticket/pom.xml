@@ -215,10 +215,10 @@
 									<vm>server</vm>
 									<!-- jdk.crypto.ec: TLS, jdk.jdwp.agent: remote debug -->
 									<addModules>jdk.crypto.ec</addModules>
-									<executable>ticket</executable>
+									<executable>inverno-ticket</executable>
 									<launchers>
 										<launcher>
-											<name>ticket</name>
+											<name>inverno-ticket</name>
 											<vmOptions>-Xms2G -Xmx2G -XX:+UseNUMA -XX:+UseParallelGC --add-opens reactor.core/reactor.core.publisher=lettuce.core --add-modules io.netty.transport.unix.common,io.netty.transport.classes.epoll,io.netty.transport.epoll.linux.x86_64</vmOptions>
 										</launcher>
 									</launchers>
