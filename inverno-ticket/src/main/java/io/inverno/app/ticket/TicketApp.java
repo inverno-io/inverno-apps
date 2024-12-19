@@ -20,15 +20,11 @@ import io.inverno.core.v1.Application;
 import io.inverno.mod.configuration.ConfigurationKey;
 import io.inverno.mod.configuration.ConfigurationSource;
 import io.inverno.mod.configuration.source.BootstrapConfigurationSource;
-import io.inverno.mod.security.authentication.password.RawPassword;
-import io.inverno.mod.security.authentication.user.User;
-import io.inverno.mod.security.identity.PersonIdentity;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import reactor.core.publisher.Mono;
 
 /**
  * <p>
@@ -63,35 +59,6 @@ public class TicketApp {
 					.setConfigurationSource(bootstrapConfigurationSource)
 					.setConfigurationParameters(List.of(ConfigurationKey.Parameter.of(PROFILE_PROPERTY_NAME, profile)))
 				);
-			})
-			.block();
-
-		ticketApp.userRepository().getUser("jsmith")
-			.switchIfEmpty(Mono.defer(() -> ticketApp.userRepository().createUser(User.of("jsmith")
-				.password(new RawPassword("password"))
-				.identity(new PersonIdentity("jsmith", "John", "Smith", "jsmith@inverno.io"))
-				.groups("developer")
-				.build())
-			))
-			.flatMap(user -> {
-				if(!user.getGroups().contains("developer")) {
-					return ticketApp.userRepository().addUserToGroups("jsmith",  "developer");
-				}
-				return Mono.just(user);
-			})
-			.block();
-
-		ticketApp.userRepository().getUser("admin")
-			.switchIfEmpty(Mono.defer(() -> ticketApp.userRepository().createUser(User.<PersonIdentity>of("admin")
-				.password(new RawPassword("password"))
-				.groups("admin")
-				.build())
-			))
-			.flatMap(user -> {
-				if(!user.getGroups().contains("admin")) {
-					return ticketApp.userRepository().addUserToGroups("admin",  "admin");
-				}
-				return Mono.just(user);
 			})
 			.block();
 	}
