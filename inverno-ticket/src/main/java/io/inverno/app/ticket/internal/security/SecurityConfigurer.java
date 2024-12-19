@@ -19,9 +19,11 @@ import io.inverno.core.annotation.Bean;
 import io.inverno.mod.base.reflect.Types;
 import io.inverno.mod.base.resource.MediaTypes;
 import io.inverno.mod.http.base.ExchangeContext;
+import io.inverno.mod.http.base.ForbiddenException;
 import io.inverno.mod.http.base.Method;
 import io.inverno.mod.http.base.UnauthorizedException;
-import io.inverno.mod.security.accesscontrol.AccessController;
+import io.inverno.mod.security.accesscontrol.GroupsRoleBasedAccessControllerResolver;
+import io.inverno.mod.security.accesscontrol.RoleBasedAccessController;
 import io.inverno.mod.security.authentication.LoginCredentialsMatcher;
 import io.inverno.mod.security.authentication.user.User;
 import io.inverno.mod.security.authentication.user.UserAuthentication;
@@ -71,7 +73,7 @@ import reactor.core.publisher.Mono;
 	@WebRoute(path = { "/login" }, method = { Method.POST }),
 	@WebRoute(path = { "/logout" }, method = { Method.GET }, produces = { "application/json" })
 })
-public class SecurityConfigurer implements WebRouteInterceptor.Configurer<InterceptingSecurityContext<PersonIdentity, AccessController>>, WebRouter.Configurer<SecurityContext<PersonIdentity, AccessController>>, ErrorWebRouteInterceptor.Configurer<ExchangeContext> {
+public class SecurityConfigurer implements WebRouteInterceptor.Configurer<InterceptingSecurityContext<PersonIdentity, RoleBasedAccessController>>, WebRouter.Configurer<SecurityContext<PersonIdentity, RoleBasedAccessController>>, ErrorWebRouteInterceptor.Configurer<ExchangeContext> {
 
 	private final UserRepository<PersonIdentity, User<PersonIdentity>> userRepository;
 	private final JWSService jwsService;
@@ -82,7 +84,7 @@ public class SecurityConfigurer implements WebRouteInterceptor.Configurer<Interc
 	}
 
 	@Override
-	public WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, AccessController>> configure(WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, AccessController>> interceptors) {
+	public WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, RoleBasedAccessController>> configure(WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, RoleBasedAccessController>> interceptors) {
 		return interceptors
 			.intercept()                                                                                  // 1
 				.path("/")
@@ -100,14 +102,21 @@ public class SecurityConfigurer implements WebRouteInterceptor.Configurer<Interc
 						)
 						.failOnDenied()                                                                   // 5
 						.map(jwsAuthentication -> jwsAuthentication.getJws().getPayload()),               // 6
-						new UserIdentityResolver<>()
+						new UserIdentityResolver<>(),
+						new GroupsRoleBasedAccessControllerResolver()
 					),
 					AccessControlInterceptor.authenticated()                                              // 7
+				))
+			.intercept()
+				.path("/open-api/**")
+				.interceptor(AccessControlInterceptor.verify(securityContext -> securityContext.getAccessController()
+					.orElseThrow(() -> new ForbiddenException("Missing access controller"))
+					.hasRole("developer")
 				));
 	}
 
 	@Override
-	public void configure(WebRouter<SecurityContext<PersonIdentity, AccessController>> routes) {
+	public void configure(WebRouter<SecurityContext<PersonIdentity, RoleBasedAccessController>> routes) {
 		routes
 			.route()                                                                                                                     // 1
 				.path("/login")
