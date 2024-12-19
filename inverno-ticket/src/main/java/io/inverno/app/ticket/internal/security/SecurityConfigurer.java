@@ -16,12 +16,18 @@
 package io.inverno.app.ticket.internal.security;
 
 import io.inverno.core.annotation.Bean;
+import io.inverno.core.annotation.Init;
 import io.inverno.mod.base.reflect.Types;
 import io.inverno.mod.base.resource.MediaTypes;
+import io.inverno.mod.configuration.DefaultingStrategy;
+import io.inverno.mod.configuration.source.RedisConfigurationSource;
 import io.inverno.mod.http.base.ExchangeContext;
+import io.inverno.mod.http.base.ForbiddenException;
 import io.inverno.mod.http.base.Method;
 import io.inverno.mod.http.base.UnauthorizedException;
-import io.inverno.mod.security.accesscontrol.AccessController;
+import io.inverno.mod.redis.RedisClient;
+import io.inverno.mod.security.accesscontrol.ConfigurationSourcePermissionBasedAccessControllerResolver;
+import io.inverno.mod.security.accesscontrol.PermissionBasedAccessController;
 import io.inverno.mod.security.authentication.LoginCredentialsMatcher;
 import io.inverno.mod.security.authentication.user.User;
 import io.inverno.mod.security.authentication.user.UserAuthentication;
@@ -71,18 +77,30 @@ import reactor.core.publisher.Mono;
 	@WebRoute(path = { "/login" }, method = { Method.POST }),
 	@WebRoute(path = { "/logout" }, method = { Method.GET }, produces = { "application/json" })
 })
-public class SecurityConfigurer implements WebRouteInterceptor.Configurer<InterceptingSecurityContext<PersonIdentity, AccessController>>, WebRouter.Configurer<SecurityContext<PersonIdentity, AccessController>>, ErrorWebRouteInterceptor.Configurer<ExchangeContext> {
+public class SecurityConfigurer implements WebRouteInterceptor.Configurer<InterceptingSecurityContext<PersonIdentity, PermissionBasedAccessController>>, WebRouter.Configurer<SecurityContext<PersonIdentity, PermissionBasedAccessController>>, ErrorWebRouteInterceptor.Configurer<ExchangeContext> {
 
 	private final UserRepository<PersonIdentity, User<PersonIdentity>> userRepository;
 	private final JWSService jwsService;
+	private final RedisConfigurationSource permissionsSource;
 
-	public SecurityConfigurer(UserRepository<PersonIdentity, User<PersonIdentity>> userRepository, JWSService jwsService) {
+	public SecurityConfigurer(UserRepository<PersonIdentity, User<PersonIdentity>> userRepository, JWSService jwsService, RedisClient<String, String> redisClient) {
 		this.userRepository = userRepository;
 		this.jwsService = jwsService;
+		this.permissionsSource = new RedisConfigurationSource(redisClient).withDefaultingStrategy(DefaultingStrategy.wildcard());
+		this.permissionsSource.setKeyPrefix("SEC");
+	}
+
+	@Init
+	public void init() {
+		this.permissionsSource.set("jsmith", "remove")
+			.and()
+			.set("jsmith", "*").withParameters("plan", "1")
+			.execute()
+			.blockLast();
 	}
 
 	@Override
-	public WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, AccessController>> configure(WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, AccessController>> interceptors) {
+	public WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, PermissionBasedAccessController>> configure(WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, PermissionBasedAccessController>> interceptors) {
 		return interceptors
 			.intercept()                                                                                  // 1
 				.path("/")
@@ -100,14 +118,21 @@ public class SecurityConfigurer implements WebRouteInterceptor.Configurer<Interc
 						)
 						.failOnDenied()                                                                   // 5
 						.map(jwsAuthentication -> jwsAuthentication.getJws().getPayload()),               // 6
-						new UserIdentityResolver<>()
+						new UserIdentityResolver<>(),
+						new ConfigurationSourcePermissionBasedAccessControllerResolver(this.permissionsSource)
 					),
 					AccessControlInterceptor.authenticated()                                              // 7
-				));
+				))
+				.intercept()
+					.path("/open-api/**")
+					.interceptor(AccessControlInterceptor.verify(securityContext -> securityContext.getAccessController()
+						.orElseThrow(() -> new ForbiddenException("Missing access controller"))
+						.hasPermission("access-api")
+					));
 	}
 
 	@Override
-	public void configure(WebRouter<SecurityContext<PersonIdentity, AccessController>> routes) {
+	public void configure(WebRouter<SecurityContext<PersonIdentity, PermissionBasedAccessController>> routes) {
 		routes
 			.route()                                                                                                                     // 1
 				.path("/login")
