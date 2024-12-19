@@ -35,22 +35,9 @@ public class TicketDto {
 	private String summary;
 	private String description;
 
-	/**
-	 * 
-	 */
 	public TicketDto() {
 	}
 
-	/**
-	 * 
-	 * @param id
-	 * @param type
-	 * @param status
-	 * @param title
-	 * @param summary
-	 * @param description
-	 * @param creationDateTime 
-	 */
 	public TicketDto(Long id, Ticket.Type type, Ticket.Status status, String title, String summary, String description, ZonedDateTime creationDateTime) {
 		this.id = id;
 		this.type = type;
@@ -61,114 +48,58 @@ public class TicketDto {
 		this.creationDateTime = creationDateTime;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public Long getId() {
 		return id;
 	}
 
-	/**
-	 * 
-	 * @param id 
-	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public Ticket.Type getType() {
 		return type;
 	}
 
-	/**
-	 * 
-	 * @param type 
-	 */
 	public void setType(Ticket.Type type) {
 		this.type = type;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public Ticket.Status getStatus() {
 		return status;
 	}
 
-	/**
-	 * 
-	 * @param status 
-	 */
 	public void setStatus(Ticket.Status status) {
 		this.status = status;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public ZonedDateTime getCreationDateTime() {
 		return creationDateTime;
 	}
 
-	/**
-	 * 
-	 * @param creationDateTime 
-	 */
 	public void setCreationDateTime(ZonedDateTime creationDateTime) {
 		this.creationDateTime = creationDateTime;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * 
-	 * @param title 
-	 */
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getSummary() {
 		return summary;
 	}
 
-	/**
-	 * 
-	 * @param summary 
-	 */
 	public void setSummary(String summary) {
 		this.summary = summary;
 	}
 	
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * 
-	 * @param description 
-	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}

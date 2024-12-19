@@ -18,26 +18,20 @@
  * <p>
  * Inverno's Ticket showcase application module.
  * </p>
- * 
+ *
  * @author <a href="mailto:jeremy.kuhn@inverno.io">Jeremy Kuhn</a>
  *
  * @version 1.0.0
  */
 @io.inverno.core.annotation.Module
 module io.inverno.app.ticket {
-	requires io.inverno.mod.boot;
-	requires io.inverno.mod.redis.lettuce;
-	requires io.inverno.mod.web.server;
-	requires io.inverno.mod.security.http;
-	requires io.inverno.mod.security.jose;
+    requires io.inverno.mod.boot;
+    requires io.inverno.mod.redis.lettuce;
+    requires io.inverno.mod.web.server;
 
-	requires com.fasterxml.jackson.datatype.jsr310;
+    requires org.apache.logging.log4j;
+    requires org.apache.logging.log4j.layout.template.json;
 
-	requires org.apache.logging.log4j;
-	requires org.apache.logging.log4j.layout.template.json;
-
-	exports io.inverno.app.ticket.internal.model to com.fasterxml.jackson.databind;
-	exports io.inverno.app.ticket.internal.rest.v1.dto to com.fasterxml.jackson.databind;
-	
-	exports io.inverno.app.ticket;
+    exports io.inverno.app.ticket.internal.model to com.fasterxml.jackson.databind;
+    exports io.inverno.app.ticket.internal.rest.v1.dto to com.fasterxml.jackson.databind;
 }

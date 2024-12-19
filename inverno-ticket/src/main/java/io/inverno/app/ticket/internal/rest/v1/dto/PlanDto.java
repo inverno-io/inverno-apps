@@ -34,21 +34,9 @@ public class PlanDto {
 	private ZonedDateTime creationDateTime;
 	private List<TicketDto> tickets;
 
-	/**
-	 * 
-	 */
 	public PlanDto() {
 	}
 
-	/**
-	 * 
-	 * @param id
-	 * @param title
-	 * @param summary
-	 * @param description
-	 * @param creationDateTime
-	 * @param tickets 
-	 */
 	public PlanDto(Long id, String title, String summary, String description, ZonedDateTime creationDateTime, List<TicketDto> tickets) {
 		this.id = id;
 		this.title = title;
@@ -58,98 +46,50 @@ public class PlanDto {
 		this.tickets = tickets;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public Long getId() {
 		return id;
 	}
 
-	/**
-	 * 
-	 * @param id 
-	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * 
-	 * @param title 
-	 */
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getSummary() {
 		return summary;
 	}
 
-	/**
-	 * 
-	 * @param summary 
-	 */
 	public void setSummary(String summary) {
 		this.summary = summary;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * 
-	 * @param description 
-	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public ZonedDateTime getCreationDateTime() {
 		return creationDateTime;
 	}
 
-	/**
-	 * 
-	 * @param creationDateTime 
-	 */
 	public void setCreationDateTime(ZonedDateTime creationDateTime) {
 		this.creationDateTime = creationDateTime;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public List<TicketDto> getTickets() {
 		return tickets;
 	}
 
-	/**
-	 * 
-	 * @param tickets 
-	 */
 	public void setTickets(List<TicketDto> tickets) {
 		this.tickets = tickets;
 	}

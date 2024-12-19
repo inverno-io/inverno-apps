@@ -1,74 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" name="Website" shutdownHook="disable">
-    <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{DEFAULT} %highlight{%-5level} [%t] %c{1.} - %msg%n%ex"/>
-        </Console>
-        <!-- Application log -->
-        <RollingRandomAccessFile name="ApplicationRollingFile" fileName="logs/application.log" filePattern="logs/error-%d{yyyy-MM-dd}-%i.log.gz">
-            <JsonTemplateLayout/>
-            <Policies>
-                <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="10 MB"/>
-            </Policies>
-            <DefaultRolloverStrategy>
-                <Delete basePath="logs" maxDepth="2">
-                    <IfFileName glob="application-*.log.gz" />
-                    <IfLastModified age="10d" />
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingRandomAccessFile>
-        <Async name="AsyncApplicationRollingFile">
-            <AppenderRef ref="ApplicationRollingFile"/>
-        </Async>
-        <!-- Error log -->
-        <RollingRandomAccessFile name="ErrorRollingFile" fileName="logs/error.log" filePattern="logs/error-%d{yyyy-MM-dd}-%i.log.gz">
-            <JsonTemplateLayout/>
-            <NoMarkerFilter onMatch="ACCEPT" onMismatch="DENY"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="10 MB"/>
-            </Policies>
-            <DefaultRolloverStrategy>
-                <Delete basePath="logs" maxDepth="2">
-                    <IfFileName glob="error-*.log.gz" />
-                    <IfLastModified age="10d" />
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingRandomAccessFile>
-        <Async name="AsyncErrorRollingFile">
-            <AppenderRef ref="ErrorRollingFile"/>
-        </Async>
-        <!-- Access log -->
-        <RollingRandomAccessFile name="AccessRollingFile" fileName="logs/access.log" filePattern="logs/access-%d{yyyy-MM-dd}-%i.log.gz">
-            <JsonTemplateLayout eventTemplateUri="classpath:AccessLayout.json"/>
-            <MarkerFilter marker="HTTP_ACCESS" onMatch="ACCEPT" onMismatch="DENY"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="10 MB"/>
-            </Policies>
-            <DefaultRolloverStrategy>
-                <Delete basePath="logs" maxDepth="2">
-                    <IfFileName glob="access-*.log.gz" />
-                    <IfLastModified age="10d" />
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingRandomAccessFile>
-        <Async name="AsyncAccessRollingFile">
-            <AppenderRef ref="AccessRollingFile"/>
-        </Async>
-    </Appenders>
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{DEFAULT} %highlight{%-5level} [%t] %c{1.} - %msg%n%ex"/>
+		</Console>
+		<!-- Application log -->
+		<RollingRandomAccessFile name="ApplicationRollingFile" fileName="logs/application.log" filePattern="logs/error-%d{yyyy-MM-dd}-%i.log.gz">
+			<JsonTemplateLayout/>
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+			<DefaultRolloverStrategy>
+				<Delete basePath="logs" maxDepth="2">
+					<IfFileName glob="application-*.log.gz" />
+					<IfLastModified age="10d" />
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingRandomAccessFile>
+		<Async name="AsyncApplicationRollingFile">
+			<AppenderRef ref="ApplicationRollingFile"/>
+		</Async>
+		<!-- Error log -->
+		<RollingRandomAccessFile name="ErrorRollingFile" fileName="logs/error.log" filePattern="logs/error-%d{yyyy-MM-dd}-%i.log.gz">
+			<JsonTemplateLayout/>
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+			<DefaultRolloverStrategy>
+				<Delete basePath="logs" maxDepth="2">
+					<IfFileName glob="error-*.log.gz" />
+					<IfLastModified age="10d" />
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingRandomAccessFile>
+		<Async name="AsyncErrorRollingFile">
+			<AppenderRef ref="ErrorRollingFile"/>
+		</Async>
+		<!-- Access log -->
+		<RollingRandomAccessFile name="AccessRollingFile" fileName="logs/access.log" filePattern="logs/access-%d{yyyy-MM-dd}-%i.log.gz">
+			<JsonTemplateLayout eventTemplateUri="classpath:AccessLayout.json"/>
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+			<DefaultRolloverStrategy>
+				<Delete basePath="logs" maxDepth="2">
+					<IfFileName glob="access-*.log.gz" />
+					<IfLastModified age="10d" />
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingRandomAccessFile>
+		<Async name="AsyncAccessRollingFile">
+			<AppenderRef ref="AccessRollingFile"/>
+		</Async>
+	</Appenders>
 
-    <Loggers>
-        <Logger name="io.inverno.mod.http.server.internal.AbstractExchange" additivity="false" level="info">
-            <AppenderRef ref="AsyncAccessRollingFile" level="info"/>
-            <AppenderRef ref="AsyncErrorRollingFile" level="error"/>
-        </Logger>
+	<Loggers>
+		<Logger name="io.inverno.mod.http.server.Exchange" additivity="false" level="info">
+			<AppenderRef ref="AsyncAccessRollingFile" level="info"/>
+		</Logger>
+		<Logger name="io.inverno.mod.http.server.ErrorExchange" additivity="false" level="info">
+			<AppenderRef ref="AsyncErrorRollingFile" level="error"/>
+		</Logger>
 
-        <Root level="info" additivity="false">
-            <AppenderRef ref="Console" level="info" />
-            <AppenderRef ref="ApplicationRollingFile" level="info" />
-            <AppenderRef ref="AsyncErrorRollingFile" level="error"/>
-        </Root>
-    </Loggers>
+		<Logger name="io.inverno.mod.http.server.Exchange" additivity="false" level="info">
+			<AppenderRef ref="AsyncAccessRollingFile" level="info"/>
+			<AppenderRef ref="AsyncErrorRollingFile" level="error"/>
+		</Logger>
+
+		<Root level="info" additivity="false">
+			<AppenderRef ref="Console" level="info" />
+			<AppenderRef ref="ApplicationRollingFile" level="info" />
+			<AppenderRef ref="AsyncErrorRollingFile" level="error"/>
+		</Root>
+	</Loggers>
 </Configuration>

@@ -16,47 +16,14 @@
 
 import SplitPanel from './split-panel.js'
 
-const API_SECURITY_URL = '/api/security';
-const API_IDENTITY_URL = API_SECURITY_URL + '/identity';
-
 const API_BASE_URL = '/api/v1';
 const API_PLAN_URL = API_BASE_URL + '/plan';
 const API_TICKET_URL = API_BASE_URL + '/ticket';
-
-const LOGOUT_URL = '/logout';
 
 const TicketApp = {
 	setup() {
 		/* Init */
 		const init = () => {
-			fetch(API_IDENTITY_URL, {
-				method: 'get',
-				headers: {
-					'accept': 'application/json'
-				}
-			})
-			.then(res => {
-				if (!res.ok) {
-					const error = new Error(res.statusText);
-					error.json = res.json();
-					throw error;
-				}
-				return res.json();
-			})
-			.then(json => {
-				identity.value = json;
-			})
-			.catch(err => {
-				if (err.json) {
-					return err.json.then(json => {
-						console.warn(json.error + '(' + json.status + '): ' + json.message);
-					});
-				}
-				else {
-					console.warn(err.message);
-				}
-			});
-
 			fetch(API_PLAN_URL,  {
 				method: 'get'
 			})
@@ -91,7 +58,6 @@ const TicketApp = {
         });
 		
 		/* Plans */
-		const identity = Vue.ref(null);
 		const plans = Vue.ref([]);
 
 		const selectedPlan = Vue.ref(null);
@@ -666,39 +632,8 @@ const TicketApp = {
 			selectPlan(selectedPlan.value.id, Array.from(filteredTicketStatuses.value));
 		};
 
-		const onLogout = () => {
-			if(confirm('Are you sure you want to logout?')) {
-				fetch(LOGOUT_URL, {
-					method: 'get',
-					redirect: 'manual',
-					headers: {
-						'accept': 'application/json'
-					}
-				})
-				.then(res => {
-					if(res.type !== 'opaqueredirect') {
-						const error = new Error(res.statusText);
-						error.json = res.json();
-						throw error;
-					}
-					window.location = '/login';
-				})
-				.catch(err => {
-					if (err.json) {
-						return err.json.then(json => {
-							alert(json.error + '(' + json.status + '): ' + json.message);
-						});
-					}
-					else {
-						alert(err.message);
-					}
-				});
-			}
-		};
-
 		return {
 			init,
-			identity,
 			plans,
 			selectedPlan,
 			expandedPlan,
@@ -746,8 +681,7 @@ const TicketApp = {
 			onSubmitAddTicketToPlan,
 			onCreateTicket,
 			onSubmitCreateTicket,
-			onToggleStatus,
-			onLogout
+			onToggleStatus
 		};
 	},
 	computed: {

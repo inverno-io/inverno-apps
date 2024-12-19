@@ -26,17 +26,7 @@ import reactor.core.publisher.Mono;
  */
 public interface DtoMapper<DTO, DOMAIN> {
 
-	/**
-	 * 
-	 * @param domain
-	 * @return 
-	 */
 	Mono<DTO> toDto(DOMAIN domain);
 	
-	/**
-	 * 
-	 * @param dto
-	 * @return 
-	 */
-	Mono<DOMAIN> toDomain(DTO dto);	
+	Mono<DOMAIN> toDomain(DTO dto);
 }

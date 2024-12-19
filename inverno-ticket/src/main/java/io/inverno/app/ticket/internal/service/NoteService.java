@@ -39,21 +39,11 @@ public class NoteService {
 	private final RedisTransactionalClient<String, String> redisClient;
 	private final ObjectMapper mapper;
 	
-	/**
-	 * 
-	 * @param redisClient
-	 * @param mapper 
-	 */
 	public NoteService(RedisTransactionalClient<String, String> redisClient, ObjectMapper mapper) {
 		this.redisClient = redisClient;
 		this.mapper = mapper;
 	}
 	
-	/**
-	 * 
-	 * @param note
-	 * @return 
-	 */
 	public Mono<Note> saveTicketNote(Note note) {
 		if(note.getIndex() != null) {
 			try {
@@ -87,11 +77,6 @@ public class NoteService {
 		}
 	}
 	
-	/**
-	 * 
-	 * @param ticketId
-	 * @return 
-	 */
 	public Flux<Note> listTicketNotes(long ticketId) {
 		return this.redisClient
 			.lrange(String.format(REDIS_KEY_TICKET_NOTES, ticketId), 0, -1)
@@ -108,12 +93,6 @@ public class NoteService {
 			});
 	}
 	
-	/**
-	 * 
-	 * @param ticketId
-	 * @param noteIndex
-	 * @return 
-	 */
 	public Mono<Note> getTicketNote(long ticketId, int noteIndex) {
 		return this.redisClient
 			.lindex(String.format(REDIS_KEY_TICKET_NOTES, ticketId), noteIndex)
@@ -129,12 +108,6 @@ public class NoteService {
 			});
 	}
 	
-	/**
-	 * 
-	 * @param ticketId
-	 * @param noteIndex
-	 * @return 
-	 */
 	public Mono<Note> removeTicketNote(long ticketId, int noteIndex) {
 		String ticketNotesKey = String.format(REDIS_KEY_TICKET_NOTES, ticketId);
 		return Mono.from(this.redisClient.connection(operations -> {
