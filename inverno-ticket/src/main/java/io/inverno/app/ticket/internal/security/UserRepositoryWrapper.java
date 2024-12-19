@@ -23,7 +23,6 @@ import io.inverno.mod.security.authentication.user.RedisUserRepository;
 import io.inverno.mod.security.authentication.user.User;
 import io.inverno.mod.security.authentication.user.UserRepository;
 import io.inverno.mod.security.identity.PersonIdentity;
-
 import java.util.function.Supplier;
 
 /**
@@ -36,24 +35,9 @@ import java.util.function.Supplier;
 @Wrapper @Bean( name = "userRepository" )
 public class UserRepositoryWrapper implements Supplier<UserRepository<PersonIdentity, User<PersonIdentity>>> {
 
-	/**
-	 * The Redis client.
-	 */
 	private final RedisClient<String, String> redisClient;
-
-	/**
-	 * The Object mapper.
-	 */
 	private final ObjectMapper mapper;
 
-	/**
-	 * <p>
-	 * Create a user repository wrapper.
-	 * </p>
-	 *
-	 * @param redisClient
-	 * @param mapper
-	 */
 	public UserRepositoryWrapper(RedisClient<String, String> redisClient, ObjectMapper mapper) {
 		this.redisClient = redisClient;
 		this.mapper = mapper;

@@ -53,21 +53,11 @@ public class TicketService {
 	private final RedisTransactionalClient<String, String> redisClient;
 	private final ObjectMapper mapper;
 	
-	/**
-	 * 
-	 * @param redisClient
-	 * @param mapper 
-	 */
 	public TicketService(RedisTransactionalClient<String, String> redisClient, ObjectMapper mapper) {
 		this.redisClient = redisClient;
 		this.mapper = mapper;
 	}
 	
-	/**
-	 * 
-	 * @param ticket
-	 * @return 
-	 */
 	public Mono<Ticket> saveTicket(Ticket ticket) {
 		if(ticket.getId() != null) {
 			// Try to update
@@ -129,12 +119,6 @@ public class TicketService {
 		}
 	}
 	
-	/**
-	 * 
-	 * @param ticketId
-	 * @param status
-	 * @return 
-	 */
 	public Mono<Ticket> updateTicketStatus(long ticketId, Ticket.Status status) {
 		return Mono.from(this.redisClient.connection(operations -> operations
 			.get(String.format(REDIS_KEY_TICKET, ticketId))
@@ -158,19 +142,10 @@ public class TicketService {
 		));
 	}
 	
-	/**
-	 * 
-	 * @return 
-	 */
 	public Flux<Ticket> listTickets() {
 		return this.listTickets(List.of(Ticket.Status.OPEN, Ticket.Status.STUDIED, Ticket.Status.IN_PROGRESS, Ticket.Status.DONE, Ticket.Status.REJECTED));
 	}
 	
-	/**
-	 * 
-	 * @param statuses
-	 * @return 
-	 */
 	public Flux<Ticket> listTickets(List<Ticket.Status> statuses) {
 		if(statuses == null || statuses.isEmpty()) {
 			return Flux.empty();
@@ -195,11 +170,6 @@ public class TicketService {
 		));
 	}
 	
-	/**
-	 * 
-	 * @param ticketId
-	 * @return 
-	 */
 	public Mono<Ticket> getTicket(long ticketId) {
 		return this.redisClient
 			.get(String.format(REDIS_KEY_TICKET, ticketId))
@@ -213,11 +183,6 @@ public class TicketService {
 			});
 	}
 	
-	/**
-	 * 
-	 * @param ticketIds
-	 * @return 
-	 */
 	public Flux<Ticket> getTickets(List<Long> ticketIds) {
 		if(ticketIds == null || ticketIds.isEmpty()) {
 			return Flux.empty();
@@ -238,11 +203,6 @@ public class TicketService {
 			);
 	}
 	
-	/**
-	 * 
-	 * @param ticketId
-	 * @return 
-	 */
 	public Mono<Ticket> removeTicket(long ticketId) {
 		// TODO tickets are not removed from plan's ticket set
 		String ticketKey = String.format(REDIS_KEY_TICKET, ticketId);

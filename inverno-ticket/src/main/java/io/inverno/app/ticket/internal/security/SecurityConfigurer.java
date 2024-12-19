@@ -16,18 +16,12 @@
 package io.inverno.app.ticket.internal.security;
 
 import io.inverno.core.annotation.Bean;
-import io.inverno.core.annotation.Init;
 import io.inverno.mod.base.reflect.Types;
 import io.inverno.mod.base.resource.MediaTypes;
-import io.inverno.mod.configuration.DefaultingStrategy;
-import io.inverno.mod.configuration.source.RedisConfigurationSource;
 import io.inverno.mod.http.base.ExchangeContext;
-import io.inverno.mod.http.base.ForbiddenException;
 import io.inverno.mod.http.base.Method;
 import io.inverno.mod.http.base.UnauthorizedException;
-import io.inverno.mod.redis.RedisClient;
-import io.inverno.mod.security.accesscontrol.ConfigurationSourcePermissionBasedAccessControllerResolver;
-import io.inverno.mod.security.accesscontrol.PermissionBasedAccessController;
+import io.inverno.mod.security.accesscontrol.AccessController;
 import io.inverno.mod.security.authentication.LoginCredentialsMatcher;
 import io.inverno.mod.security.authentication.user.User;
 import io.inverno.mod.security.authentication.user.UserAuthentication;
@@ -56,88 +50,77 @@ import io.inverno.mod.security.jose.jwa.OCTAlgorithm;
 import io.inverno.mod.security.jose.jws.JWSAuthentication;
 import io.inverno.mod.security.jose.jws.JWSAuthenticator;
 import io.inverno.mod.security.jose.jws.JWSService;
-import io.inverno.mod.web.server.ErrorWebRouter;
-import io.inverno.mod.web.server.ErrorWebRouterConfigurer;
-import io.inverno.mod.web.server.WebInterceptable;
-import io.inverno.mod.web.server.WebInterceptorsConfigurer;
-import io.inverno.mod.web.server.WebRoutable;
-import io.inverno.mod.web.server.WebRoutesConfigurer;
+import io.inverno.mod.web.server.ErrorWebRouteInterceptor;
+import io.inverno.mod.web.server.WebRouteInterceptor;
+import io.inverno.mod.web.server.WebRouter;
 import io.inverno.mod.web.server.annotation.WebRoute;
 import io.inverno.mod.web.server.annotation.WebRoutes;
-import reactor.core.publisher.Mono;
-
 import java.util.List;
+import reactor.core.publisher.Mono;
 
 /**
  * <p>
- * The Web configurer used to configure application security.
+ * Web server configurer used to configure application security.
  * </p>
  *
  * @author <a href="mailto:jeremy.kuhn@inverno.io">Jeremy Kuhn</a>
  */
+@Bean( visibility = Bean.Visibility.PRIVATE )
 @WebRoutes({
 	@WebRoute(path = { "/login" }, method = { Method.GET }),
 	@WebRoute(path = { "/login" }, method = { Method.POST }),
-	@WebRoute(path = { "/logout" }, method = { Method.GET }, produces = { "application/json" }),
+	@WebRoute(path = { "/logout" }, method = { Method.GET }, produces = { "application/json" })
 })
-@Bean( visibility = Bean.Visibility.PRIVATE )
-public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<PersonIdentity, PermissionBasedAccessController>>, WebInterceptorsConfigurer<InterceptingSecurityContext<PersonIdentity, PermissionBasedAccessController>>, ErrorWebRouterConfigurer<ExchangeContext> {
+public class SecurityConfigurer implements WebRouteInterceptor.Configurer<InterceptingSecurityContext<PersonIdentity, AccessController>>, WebRouter.Configurer<SecurityContext<PersonIdentity, AccessController>>, ErrorWebRouteInterceptor.Configurer<ExchangeContext> {
 
-	/**
-	 * The user repository
-	 */
 	private final UserRepository<PersonIdentity, User<PersonIdentity>> userRepository;
-
-	/**
-	 * The JWS service
-	 */
 	private final JWSService jwsService;
 
-	/**
-	 * The permissions configuration source.
-	 */
-	private final RedisConfigurationSource permissionsSource;
-
-	/**
-	 * <p>
-	 * Creates the security configurer.
-	 * </p>
-	 *
-	 * @param userRepository
-	 * @param jwsService
-	 * @param redisClient
-	 */
-	public SecurityConfigurer(UserRepository<PersonIdentity, User<PersonIdentity>> userRepository, JWSService jwsService, RedisClient<String, String> redisClient) {
+	public SecurityConfigurer(UserRepository<PersonIdentity, User<PersonIdentity>> userRepository, JWSService jwsService) {
 		this.userRepository = userRepository;
 		this.jwsService = jwsService;
-		this.permissionsSource = new RedisConfigurationSource(redisClient).withDefaultingStrategy(DefaultingStrategy.wildcard());
-		this.permissionsSource.setKeyPrefix("SEC");
-	}
-
-	@Init
-	public void init() {
-		this.permissionsSource.set("jsmith", "remove")
-				.and()
-				.set("jsmith", "*").withParameters("plan", "1")
-				.execute()
-				.blockLast();
 	}
 
 	@Override
-	public void configure(WebRoutable<SecurityContext<PersonIdentity, PermissionBasedAccessController>, ?> routes) {
+	public WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, AccessController>> configure(WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, AccessController>> interceptors) {
+		return interceptors
+			.intercept()                                                                                  // 1
+				.path("/")
+				.path("/api/**")
+				.path("/static/**")
+				.path("/webjars/**")
+				.path("/open-api/**")
+				.path("/logout")
+				.interceptors(List.of(
+					SecurityInterceptor.of(                                                               // 2
+						new CookieTokenCredentialsExtractor(),                                            // 3
+						new JWSAuthenticator<UserAuthentication<PersonIdentity>>(                         // 4
+							this.jwsService,
+							Types.type(UserAuthentication.class).type(PersonIdentity.class).and().build()
+						)
+						.failOnDenied()                                                                   // 5
+						.map(jwsAuthentication -> jwsAuthentication.getJws().getPayload()),               // 6
+						new UserIdentityResolver<>()
+					),
+					AccessControlInterceptor.authenticated()                                              // 7
+				));
+	}
+
+	@Override
+	public void configure(WebRouter<SecurityContext<PersonIdentity, AccessController>> routes) {
 		routes
-			.route()
+			.route()                                                                                                                     // 1
 				.path("/login")
 				.method(Method.GET)
 				.handler(new FormLoginPageHandler<>())
-			.route()
+			.route()                                                                                                                     // 2
 				.path("/login")
 				.method(Method.POST)
-				.handler(new LoginActionHandler<>(
-					new FormCredentialsExtractor(),
-					new UserAuthenticator<>(this.userRepository, new LoginCredentialsMatcher<>())
-						.failOnDenied()
-						.flatMap(authentication -> this.jwsService.<UserAuthentication<PersonIdentity>>builder(UserAuthentication.class)
+				.handler(new LoginActionHandler<>(                                                                                       // 3
+					new FormCredentialsExtractor(),                                                                                      // 4
+					new UserAuthenticator<>(this.userRepository, new LoginCredentialsMatcher<>())                                        // 5
+						.failOnDenied()                                                                                                  // 6
+						.flatMap(authentication -> this.jwsService.<UserAuthentication<PersonIdentity>>builder(UserAuthentication.class) // 7
 							.header(header -> header
 								.keyId("tkt")
 								.algorithm(OCTAlgorithm.HS512.getAlgorithm())
@@ -146,15 +129,15 @@ public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<P
 							.build(MediaTypes.APPLICATION_JSON)
 							.map(JWSAuthentication::new)
 						),
-					LoginSuccessHandler.of(
+					LoginSuccessHandler.of(                                                                                              // 8
 						new CookieTokenLoginSuccessHandler<>(),
 						new RedirectLoginSuccessHandler<>()
 					),
-					new RedirectLoginFailureHandler<>()
+					new RedirectLoginFailureHandler<>()                                                                                  // 9
 				))
 			.route()
 				.path("/logout")
-				.produces(MediaTypes.APPLICATION_JSON)
+				.produce(MediaTypes.APPLICATION_JSON)
 				.handler(new LogoutActionHandler<>(
 					authentication -> Mono.empty(),
 					LogoutSuccessHandler.of(
@@ -165,44 +148,11 @@ public class SecurityConfigurer implements WebRoutesConfigurer<SecurityContext<P
 	}
 
 	@Override
-	public void configure(WebInterceptable<InterceptingSecurityContext<PersonIdentity, PermissionBasedAccessController>, ?> interceptors) {
-		interceptors
-			.intercept()
-				.path("/")
-				.path("/api/**")
-				.path("/static/**")
-				.path("/webjars/**")
-				.path("/open-api/**")
-				.path("/logout")
-				.interceptors(List.of(
-					SecurityInterceptor.of(
-						new CookieTokenCredentialsExtractor(),
-						new JWSAuthenticator<UserAuthentication<PersonIdentity>>(
-							this.jwsService,
-							Types.type(UserAuthentication.class).type(PersonIdentity.class).and().build()
-						)
-						.failOnDenied()
-						.map(jwsAuthentication -> jwsAuthentication.getJws().getPayload()),
-						new UserIdentityResolver<>(),
-						new ConfigurationSourcePermissionBasedAccessControllerResolver(this.permissionsSource)
-					),
-					AccessControlInterceptor.authenticated()
-				))
-				.intercept()
-					.path("/open-api/**")
-					.interceptor(AccessControlInterceptor.verify(securityContext -> securityContext.getAccessController()
-						.orElseThrow(() -> new ForbiddenException("Missing access controller"))
-						.hasPermission("access-api")
-					));
-	}
-
-	@Override
-	public void configure(ErrorWebRouter<ExchangeContext> errorRouter) {
-		errorRouter
-			.intercept()
+	public ErrorWebRouteInterceptor<ExchangeContext> configure(ErrorWebRouteInterceptor<ExchangeContext> errorInterceptors) {
+		return errorInterceptors
+			.interceptError()
 				.path("/")
 				.error(UnauthorizedException.class)
-				.interceptor(new FormAuthenticationErrorInterceptor<>())
-			.applyInterceptors(); // We must apply interceptors to intercept white labels error routes which are already defined
+				.interceptor(new FormAuthenticationErrorInterceptor<>());
 	}
 }

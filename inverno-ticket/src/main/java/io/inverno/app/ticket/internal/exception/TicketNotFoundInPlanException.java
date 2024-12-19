@@ -30,55 +30,28 @@ public class TicketNotFoundInPlanException extends TicketException {
 	
 	private final long ticketId;
 	
-	/**
-	 * 
-	 * @param planId
-	 * @param ticketId 
-	 */
 	public TicketNotFoundInPlanException(long planId, long ticketId) {
 		super(String.format(MESSAGE_PATTERN, ticketId, planId));
 		this.planId = planId;
 		this.ticketId = ticketId;
 	}
 
-	/**
-	 * 
-	 * @param planId
-	 * @param ticketId
-	 * @param cause 
-	 */
 	public TicketNotFoundInPlanException(long planId, long ticketId, Throwable cause) {
 		super(String.format(MESSAGE_PATTERN, ticketId, planId), cause);
 		this.planId = planId;
 		this.ticketId = ticketId;
 	}
 
-	/**
-	 * 
-	 * @param planId
-	 * @param ticketId
-	 * @param cause
-	 * @param enableSuppression
-	 * @param writableStackTrace 
-	 */
 	public TicketNotFoundInPlanException(long planId, long ticketId, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(String.format(MESSAGE_PATTERN, ticketId, planId), cause, enableSuppression, writableStackTrace);
 		this.planId = planId;
 		this.ticketId = ticketId;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public long getPlanId() {
 		return planId;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public long getTicketId() {
 		return ticketId;
 	}

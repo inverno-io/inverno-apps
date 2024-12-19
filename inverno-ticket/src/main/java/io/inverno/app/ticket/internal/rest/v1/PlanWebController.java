@@ -15,33 +15,29 @@
  */
 package io.inverno.app.ticket.internal.rest.v1;
 
+import io.inverno.core.annotation.Bean;
+import io.inverno.app.ticket.internal.exception.PlanAlreadyExistsException;
 import io.inverno.app.ticket.internal.model.Plan;
 import io.inverno.app.ticket.internal.model.Ticket;
 import io.inverno.app.ticket.internal.rest.DtoMapper;
 import io.inverno.app.ticket.internal.rest.v1.dto.PlanDto;
 import io.inverno.app.ticket.internal.service.PlanService;
-import io.inverno.core.annotation.Bean;
 import io.inverno.mod.base.resource.MediaTypes;
-import io.inverno.mod.http.base.ForbiddenException;
 import io.inverno.mod.http.base.Method;
 import io.inverno.mod.http.base.NotFoundException;
 import io.inverno.mod.http.base.Status;
 import io.inverno.mod.http.base.header.Headers;
-import io.inverno.mod.security.accesscontrol.PermissionBasedAccessController;
-import io.inverno.mod.security.http.context.SecurityContext;
-import io.inverno.mod.security.identity.Identity;
+import io.inverno.mod.web.base.annotation.Body;
+import io.inverno.mod.web.base.annotation.FormParam;
+import io.inverno.mod.web.base.annotation.PathParam;
+import io.inverno.mod.web.base.annotation.QueryParam;
 import io.inverno.mod.web.server.WebExchange;
-import io.inverno.mod.web.server.annotation.Body;
-import io.inverno.mod.web.server.annotation.FormParam;
-import io.inverno.mod.web.server.annotation.PathParam;
-import io.inverno.mod.web.server.annotation.QueryParam;
 import io.inverno.mod.web.server.annotation.WebController;
 import io.inverno.mod.web.server.annotation.WebRoute;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.util.List;
 import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * <p>
@@ -57,11 +53,6 @@ public class PlanWebController {
 	private final PlanService planService;
 	private final DtoMapper<PlanDto, Plan> planDtoMapper;
 
-	/**
-	 *
-	 * @param planService
-	 * @param planDtoMapper
-	 */
 	public PlanWebController(PlanService planService, DtoMapper<PlanDto, Plan> planDtoMapper) {
 		this.planService = planService;
 		this.planDtoMapper = planDtoMapper;
@@ -80,11 +71,11 @@ public class PlanWebController {
 		plan.setId(null);
 		return this.planDtoMapper.toDomain(plan)
 			.flatMap(this.planService::savePlan)
-			.doOnNext(savedPlan ->
-					exchange.response().headers(headers -> headers
-							.status(Status.CREATED)
-							.add(Headers.NAME_LOCATION, exchange.request().getPathBuilder().segment(savedPlan.getId().toString()).buildPath())
-					)
+			.doOnNext(savedPlan -> exchange.response()
+				.headers(headers -> headers
+					.status(Status.CREATED)
+					.add(Headers.NAME_LOCATION, exchange.request().getPathBuilder().segment(savedPlan.getId().toString()).buildPath())
+				)
 			)
 			.flatMap(this.planDtoMapper::toDto);
 	}
@@ -155,23 +146,14 @@ public class PlanWebController {
 	 * @param planId            the id of the plan
 	 * @param ticketId          the id of the ticket to add
 	 * @param referenceTicketId the id of the reference ticket before which the ticket must be added, if not specified add the ticket at the end of the list
-	 * @param securityContext
 	 *
 	 * @return
 	 */
 	@WebRoute( path = "/{planId}/ticket", method = Method.POST, consumes= MediaTypes.APPLICATION_X_WWW_FORM_URLENCODED )
-	public Mono<Void> pushTicket(@PathParam long planId, @FormParam long ticketId, @FormParam Optional<Long> referenceTicketId, SecurityContext<? extends Identity, ? extends PermissionBasedAccessController> securityContext) {
-		return securityContext.getAccessController()
-			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
-			.hasPermission("push", "plan", Long.toString(planId))
-				.flatMap(hasPermission -> {
-					if(!hasPermission) {
-						throw new ForbiddenException();
-					}
-					return referenceTicketId
-						.map(refTicketId -> this.planService.insertTicketBefore(planId, ticketId, refTicketId))
-						.orElse(this.planService.addTicket(planId, ticketId));
-				});
+	public Mono<Void> pushTicket(@PathParam long planId, @FormParam long ticketId, @FormParam Optional<Long> referenceTicketId) {
+		return referenceTicketId
+			.map(refTicketId -> this.planService.insertTicketBefore(planId, ticketId, refTicketId))
+			.orElse(this.planService.addTicket(planId, ticketId));
 	}
 
 	/**
@@ -183,15 +165,7 @@ public class PlanWebController {
 	 * @return 1 if the ticket was removed, 0 if the ticket wasn't associated to the plan
 	 */
 	@WebRoute( path = "/{planId}/ticket/{ticketId}", method = Method.DELETE, produces = MediaTypes.TEXT_PLAIN )
-	public Mono<Long> removeTicket(@PathParam long planId, @PathParam long ticketId, SecurityContext<? extends Identity, ? extends PermissionBasedAccessController> securityContext) {
-		return securityContext.getAccessController()
-			.orElseThrow(() -> new ForbiddenException("Missing access controller"))
-			.hasPermission("remove", "plan", Long.toString(planId))
-			.flatMap(hasPermission -> {
-				if(!hasPermission) {
-					throw new ForbiddenException();
-				}
-				return this.planService.removeTicket(planId, ticketId);
-			});
+	public Mono<Long> removeTicket(@PathParam long planId, @PathParam long ticketId) {
+		return this.planService.removeTicket(planId, ticketId);
 	}
 }

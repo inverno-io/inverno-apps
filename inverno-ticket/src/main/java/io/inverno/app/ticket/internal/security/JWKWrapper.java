@@ -16,14 +16,12 @@
 package io.inverno.app.ticket.internal.security;
 
 import io.inverno.core.annotation.Bean;
-import io.inverno.core.annotation.Init;
 import io.inverno.core.annotation.Wrapper;
 import io.inverno.mod.security.jose.jwa.OCTAlgorithm;
 import io.inverno.mod.security.jose.jwk.InMemoryJWKStore;
 import io.inverno.mod.security.jose.jwk.JWK;
 import io.inverno.mod.security.jose.jwk.JWKService;
 import io.inverno.mod.security.jose.jwk.JWKStore;
-
 import java.util.function.Supplier;
 
 /**
@@ -37,21 +35,11 @@ import java.util.function.Supplier;
  *
  * @author <a href="mailto:jeremy.kuhn@inverno.io">Jeremy Kuhn</a>
  */
-@Wrapper @Bean( name = "jwk")
+@Wrapper @Bean( name = "jwk" )
 public class JWKWrapper implements Supplier<JWK> {
 
-	/**
-	 * The JWK service.
-	 */
 	private final JWKService jwkService;
 
-	/**
-	 * <p>
-	 * Creates the JWK wrapper.
-	 * </p>
-	 *
-	 * @param jwkService
-	 */
 	public JWKWrapper(JWKService jwkService) {
 		this.jwkService = jwkService;
 	}

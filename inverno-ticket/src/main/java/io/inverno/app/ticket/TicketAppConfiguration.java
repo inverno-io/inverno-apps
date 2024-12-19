@@ -24,51 +24,44 @@ import java.net.URI;
 
 /**
  * <p>
- * Inverno's Ticket showcase application configuration.
+ * Inverno's Ticket application configuration.
  * </p>
- * 
+ *
  * @author <a href="mailto:jeremy.kuhn@inverno.io">Jeremy Kuhn</a>
  */
 @Configuration
 public interface TicketAppConfiguration {
-	
+
 	/**
 	 * <p>
-	 * The boot module configuration.
+	 * Boot configuration.
 	 * </p>
-	 * 
-	 * @return the boot module configuration
+	 *
+	 * @return the boot configuration
 	 */
 	@NestedBean
 	BootConfiguration boot();
-	
+
 	/**
 	 * <p>
-	 * The web module configuration.
+	 * Redis configuration.
 	 * </p>
-	 * 
-	 * @return the web module configuration
-	 */
-	@NestedBean
-	WebServerConfiguration web();
-	
-	/**
-	 * <p>
-	 * The Redis Lettuce module configuration.
-	 * </p>
-	 * 
-	 * @return the Redis Lettuce module configuration
+	 *
+	 * @return the Redis configuration
 	 */
 	@NestedBean
 	LettuceRedisClientConfiguration redis();
-	
+
 	/**
 	 * <p>
-	 * The Web root location where to look for static resources.
+	 * Web server configuration.
 	 * </p>
-	 * 
-	 * @return the Web root location
+	 *
+	 * @return the Web server configuration
 	 */
+	@NestedBean
+	WebServerConfiguration web_server();
+
 	default URI web_root() {
 		return URI.create("module://" + TicketAppConfiguration.class.getModule().getName() + "/static");
 	}

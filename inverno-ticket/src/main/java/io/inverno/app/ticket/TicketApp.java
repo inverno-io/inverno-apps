@@ -18,40 +18,37 @@ package io.inverno.app.ticket;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.v1.Application;
 import io.inverno.mod.configuration.ConfigurationKey;
-import io.inverno.mod.configuration.ConfigurationProperty;
 import io.inverno.mod.configuration.ConfigurationSource;
 import io.inverno.mod.configuration.source.BootstrapConfigurationSource;
 import io.inverno.mod.security.authentication.password.RawPassword;
 import io.inverno.mod.security.authentication.user.User;
 import io.inverno.mod.security.identity.PersonIdentity;
+import java.io.IOException;
+import java.util.List;
+import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.function.Supplier;
-
 /**
  * <p>
- * Inverno's Ticket showcase application entry point.
+ * Inverno's Ticket showcase full-stack application entry point.
  * </p>
- * 
+ *
  * @author <a href="mailto:jeremy.kuhn@inverno.io">Jeremy Kuhn</a>
  */
 public class TicketApp {
 
 	private static final Logger LOGGER = LogManager.getLogger(TicketApp.class);
 
+	public static final String REDIS_KEY = "APP:Ticket";
 	public static final String PROFILE_PROPERTY_NAME = "profile";
 
-	public static final String REDIS_KEY = "APP:Ticket";
-	
-	@Bean( name = "configurationSource")
-	public static interface TicketAppConfigurationSource extends Supplier<ConfigurationSource<?, ?, ?>> {}
+	@Bean(name = "configurationSource")
+	public interface TicketAppConfigurationSource extends Supplier<ConfigurationSource> {}
 
-	@Bean( name = "configurationParameters")
-	public static interface TicketAppConfigurationParameters extends Supplier<List<ConfigurationKey.Parameter>> {}
+	@Bean(name = "configurationParameters")
+	public interface TicketAppConfigurationParameters extends Supplier<List<ConfigurationKey.Parameter>> {}
 
 	public static void main(String[] args) throws IOException {
 		final BootstrapConfigurationSource bootstrapConfigurationSource = new BootstrapConfigurationSource(TicketApp.class.getModule(), args);
@@ -59,12 +56,12 @@ public class TicketApp {
 			.get(PROFILE_PROPERTY_NAME)
 			.execute()
 			.single()
-			.map(configurationQueryResult -> configurationQueryResult.getResult().flatMap(ConfigurationProperty::asString).orElse("default"))
+			.map(configurationQueryResult -> configurationQueryResult.asString("default"))
 			.map(profile -> {
 				LOGGER.info(() -> "Active profile: " + profile);
 				return Application.run(new Ticket.Builder()
-						.setConfigurationSource(bootstrapConfigurationSource)
-						.setConfigurationParameters(List.of(ConfigurationKey.Parameter.of(PROFILE_PROPERTY_NAME, profile)))
+					.setConfigurationSource(bootstrapConfigurationSource)
+					.setConfigurationParameters(List.of(ConfigurationKey.Parameter.of(PROFILE_PROPERTY_NAME, profile)))
 				);
 			})
 			.block();

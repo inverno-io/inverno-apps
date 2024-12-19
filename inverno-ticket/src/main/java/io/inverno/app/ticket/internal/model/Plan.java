@@ -32,33 +32,16 @@ import reactor.core.publisher.Flux;
 public class Plan {
 	
 	private Long id;
-	
 	private String title;
-	
 	private String summary;
-	
 	private String description;
-	
 	private ZonedDateTime creationDateTime;
-	
 	@JsonIgnore
 	private Flux<Ticket> tickets;
 
-	/**
-	 * 
-	 */
 	public Plan() {
 	}
 
-	/**
-	 * 
-	 * @param id
-	 * @param title
-	 * @param summary
-	 * @param description
-	 * @param creationDateTime
-	 * @param tickets 
-	 */
 	public Plan(Long id, String title, String summary, String description, ZonedDateTime creationDateTime, Flux<Ticket> tickets) {
 		this.id = id;
 		this.title = title;
@@ -68,98 +51,50 @@ public class Plan {
 		this.tickets = tickets;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public Long getId() {
 		return id;
 	}
 
-	/**
-	 * 
-	 * @param id 
-	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * 
-	 * @param title 
-	 */
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getSummary() {
 		return summary;
 	}
 
-	/**
-	 * 
-	 * @param summary 
-	 */
 	public void setSummary(String summary) {
 		this.summary = summary;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * 
-	 * @param description 
-	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	/**
-	 * 
-	 * @return 
-	 */
 	public ZonedDateTime getCreationDateTime() {
 		return creationDateTime;
 	}
 
-	/**
-	 * 
-	 * @param creationDateTime 
-	 */
 	public void setCreationDateTime(ZonedDateTime creationDateTime) {
 		this.creationDateTime = creationDateTime;
 	}
 	
-	/**
-	 * 
-	 * @return 
-	 */
 	public Flux<Ticket> getTickets() {
 		return tickets;
 	}
 
-	/**
-	 * 
-	 * @param tickets 
-	 */
 	public void setTickets(Flux<Ticket> tickets) {
 		this.tickets = tickets;
 	}

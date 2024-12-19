@@ -37,7 +37,7 @@ import io.inverno.mod.web.server.annotation.WebRoute;
 public class SecurityController {
 
 	/**
-	 * Get the identity of the authenticated user.
+	 * Gets the identity of the authenticated user.
 	 *
 	 * @param securityContext the security context
 	 *

@@ -59,23 +59,12 @@ public class PlanService {
 	private final ObjectMapper mapper;
 	private final TicketService ticketService;
 
-	/**
-	 * 
-	 * @param redisClient
-	 * @param mapper
-	 * @param ticketService 
-	 */
 	public PlanService(RedisTransactionalClient<String, String> redisClient, ObjectMapper mapper, TicketService ticketService) {
 		this.redisClient = redisClient;
 		this.mapper = mapper;
 		this.ticketService = ticketService;
 	}
 	
-	/**
-	 * 
-	 * @param plan
-	 * @return 
-	 */
 	public Mono<Plan> savePlan(Plan plan) {
 		if(plan.getId() != null) {
 			try {
@@ -126,12 +115,6 @@ public class PlanService {
 		}
 	}
 	
-	/**
-	 * 
-	 * @param planId
-	 * @param ticketId
-	 * @return 
-	 */
 	public Mono<Void> addTicket(long planId, long ticketId) {
 		String sTicketId = Long.toString(ticketId);
 		return this.redisClient.multi(operations -> Flux.just(
@@ -146,13 +129,6 @@ public class PlanService {
 		});
 	}
 
-	/**
-	 * 
-	 * @param planId
-	 * @param ticketId
-	 * @param referenceTicketId
-	 * @return 
-	 */
 	public Mono<Void> insertTicketBefore(long planId, long ticketId, long referenceTicketId) {
 		String sTicketId = Long.toString(ticketId);
 		String sReferenceTicketId = Long.toString(referenceTicketId);
@@ -173,12 +149,6 @@ public class PlanService {
 		});
 	}
 	
-	/**
-	 * 
-	 * @param planId
-	 * @param ticketId
-	 * @return 
-	 */
 	public Mono<Long> removeTicket(long planId, long ticketId) {
 		String sTicketId = Long.toString(ticketId);
 		return this.redisClient
@@ -193,10 +163,6 @@ public class PlanService {
 			});
 	}
 	
-	/**
-	 * 
-	 * @return 
-	 */
 	public Flux<Plan> listPlans() {
 		return Flux.from(this.redisClient.connection(operations -> operations
 			.scan()
@@ -241,21 +207,10 @@ public class PlanService {
 		));
 	}
 	
-	/**
-	 * 
-	 * @param planId
-	 * @return 
-	 */
 	public Mono<Plan> getPlan(long planId) {
 		return this.getPlan(planId, List.of(Ticket.Status.OPEN, Ticket.Status.STUDIED, Ticket.Status.IN_PROGRESS, Ticket.Status.DONE, Ticket.Status.REJECTED));
 	}
 	
-	/**
-	 * 
-	 * @param planId
-	 * @param statuses
-	 * @return 
-	 */
 	public Mono<Plan> getPlan(long planId, List<Ticket.Status> statuses) {
 		return this.redisClient.get(String.format(REDIS_KEY_PLAN, planId))
 			.map(result -> {
@@ -270,12 +225,6 @@ public class PlanService {
 			});
 	}
 	
-	/**
-	 * 
-	 * @param planId
-	 * @param statuses
-	 * @return 
-	 */
 	private Flux<Ticket> getPlanTickets(long planId, List<Ticket.Status> statuses) {
 		if(statuses == null || statuses.isEmpty()) {
 			return Flux.empty();
@@ -293,11 +242,6 @@ public class PlanService {
 		));
 	}
 	
-	/**
-	 * 
-	 * @param planId
-	 * @return 
-	 */
 	public Mono<Plan> removePlan(long planId) {
 		String planKey = String.format(REDIS_KEY_PLAN, planId);
 		return this.redisClient
