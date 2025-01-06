@@ -4,11 +4,11 @@ The Inverno Ticket application is a simple yet powerful ticket management applic
 
 The repository provides five branches:
 
-- **master** which defines the code basline for the application.
-- **secure** which extends the **master** branch with basic security: authentication and identity.
-- **rbac** which extends the **secure** branch with role-based access control.
-- **pbac** which extends the **secure** branch with permission-based access control.
-- **ldap** which extends the **rbac** branch with LDAP authentication.
+- [master](https://github.com/inverno-io/inverno-apps/tree/master/inverno-ticket) which defines the code basline for the application.
+- [secure](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) which extends the [master](https://github.com/inverno-io/inverno-apps/tree/master/inverno-ticket) branch with basic security: authentication and identity.
+- [rbac](https://github.com/inverno-io/inverno-apps/tree/rbac/inverno-ticket) which extends the [secure](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) branch with role-based access control.
+- [pbac](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) which extends the [secure](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) branch with permission-based access control.
+- [ldap](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) which extends the [rbac](https://github.com/inverno-io/inverno-apps/tree/rbac/inverno-ticket) branch with LDAP authentication.
 
 ## Start/Stop the application
 
