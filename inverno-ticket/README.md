@@ -7,8 +7,8 @@ The repository provides five branches:
 - [master](https://github.com/inverno-io/inverno-apps/tree/master/inverno-ticket) which defines the code basline for the application.
 - [secure](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) which extends the [master](https://github.com/inverno-io/inverno-apps/tree/master/inverno-ticket) branch with basic security: authentication and identity.
 - [rbac](https://github.com/inverno-io/inverno-apps/tree/rbac/inverno-ticket) which extends the [secure](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) branch with role-based access control.
-- [pbac](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) which extends the [secure](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) branch with permission-based access control.
-- [ldap](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) which extends the [rbac](https://github.com/inverno-io/inverno-apps/tree/rbac/inverno-ticket) branch with LDAP authentication.
+- [pbac](https://github.com/inverno-io/inverno-apps/tree/pbac/inverno-ticket) which extends the [secure](https://github.com/inverno-io/inverno-apps/tree/secure/inverno-ticket) branch with permission-based access control.
+- [ldap](https://github.com/inverno-io/inverno-apps/tree/ldap/inverno-ticket) which extends the [rbac](https://github.com/inverno-io/inverno-apps/tree/rbac/inverno-ticket) branch with LDAP authentication.
 
 ## Start/Stop the application
 
