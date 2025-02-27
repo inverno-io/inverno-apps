@@ -35,7 +35,6 @@ import io.inverno.mod.security.authentication.user.UserAuthenticator;
 import io.inverno.mod.security.authentication.user.UserRepository;
 import io.inverno.mod.security.http.AccessControlInterceptor;
 import io.inverno.mod.security.http.SecurityInterceptor;
-import io.inverno.mod.security.http.context.InterceptingSecurityContext;
 import io.inverno.mod.security.http.context.SecurityContext;
 import io.inverno.mod.security.http.form.FormAuthenticationErrorInterceptor;
 import io.inverno.mod.security.http.form.FormCredentialsExtractor;
@@ -77,7 +76,7 @@ import reactor.core.publisher.Mono;
 	@WebRoute(path = { "/login" }, method = { Method.POST }),
 	@WebRoute(path = { "/logout" }, method = { Method.GET }, produces = { "application/json" })
 })
-public class SecurityConfigurer implements WebRouteInterceptor.Configurer<InterceptingSecurityContext<PersonIdentity, PermissionBasedAccessController>>, WebRouter.Configurer<SecurityContext<PersonIdentity, PermissionBasedAccessController>>, ErrorWebRouteInterceptor.Configurer<ExchangeContext> {
+public class SecurityConfigurer implements WebRouteInterceptor.Configurer<SecurityContext.Intercepted<PersonIdentity, PermissionBasedAccessController>>, WebRouter.Configurer<SecurityContext<PersonIdentity, PermissionBasedAccessController>>, ErrorWebRouteInterceptor.Configurer<ExchangeContext> {
 
 	private final UserRepository<PersonIdentity, User<PersonIdentity>> userRepository;
 	private final JWSService jwsService;
@@ -100,7 +99,7 @@ public class SecurityConfigurer implements WebRouteInterceptor.Configurer<Interc
 	}
 
 	@Override
-	public WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, PermissionBasedAccessController>> configure(WebRouteInterceptor<InterceptingSecurityContext<PersonIdentity, PermissionBasedAccessController>> interceptors) {
+	public WebRouteInterceptor<SecurityContext.Intercepted<PersonIdentity, PermissionBasedAccessController>> configure(WebRouteInterceptor<SecurityContext.Intercepted<PersonIdentity, PermissionBasedAccessController>> interceptors) {
 		return interceptors
 			.intercept()                                                                                  // 1
 				.path("/")
@@ -111,7 +110,7 @@ public class SecurityConfigurer implements WebRouteInterceptor.Configurer<Interc
 				.path("/logout")
 				.interceptors(List.of(
 					SecurityInterceptor.of(                                                               // 2
-						new CookieTokenCredentialsExtractor(),                                            // 3
+						new CookieTokenCredentialsExtractor<>(),                                          // 3
 						new JWSAuthenticator<UserAuthentication<PersonIdentity>>(                         // 4
 							this.jwsService,
 							Types.type(UserAuthentication.class).type(PersonIdentity.class).and().build()
@@ -142,7 +141,7 @@ public class SecurityConfigurer implements WebRouteInterceptor.Configurer<Interc
 				.path("/login")
 				.method(Method.POST)
 				.handler(new LoginActionHandler<>(                                                                                       // 3
-					new FormCredentialsExtractor(),                                                                                      // 4
+					new FormCredentialsExtractor<>(),                                                                                      // 4
 					new UserAuthenticator<>(this.userRepository, new LoginCredentialsMatcher<>())                                        // 5
 						.failOnDenied()                                                                                                  // 6
 						.flatMap(authentication -> this.jwsService.<UserAuthentication<PersonIdentity>>builder(UserAuthentication.class) // 7
