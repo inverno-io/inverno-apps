@@ -26,7 +26,6 @@ import io.inverno.mod.security.accesscontrol.GroupsRoleBasedAccessControllerReso
 import io.inverno.mod.security.accesscontrol.RoleBasedAccessController;
 import io.inverno.mod.security.http.AccessControlInterceptor;
 import io.inverno.mod.security.http.SecurityInterceptor;
-import io.inverno.mod.security.http.context.InterceptingSecurityContext;
 import io.inverno.mod.security.http.context.SecurityContext;
 import io.inverno.mod.security.http.form.FormAuthenticationErrorInterceptor;
 import io.inverno.mod.security.http.form.FormCredentialsExtractor;
@@ -70,7 +69,7 @@ import reactor.core.publisher.Mono;
 	@WebRoute(path = { "/login" }, method = { Method.POST }),
 	@WebRoute(path = { "/logout" }, method = { Method.GET }, produces = { "application/json" })
 })
-public class SecurityConfigurer implements WebRouteInterceptor.Configurer<InterceptingSecurityContext<LDAPIdentity, RoleBasedAccessController>>, WebRouter.Configurer<SecurityContext<LDAPIdentity, RoleBasedAccessController>>, ErrorWebRouteInterceptor.Configurer<ExchangeContext> {
+public class SecurityConfigurer implements WebRouteInterceptor.Configurer<SecurityContext.Intercepted<LDAPIdentity, RoleBasedAccessController>>, WebRouter.Configurer<SecurityContext<LDAPIdentity, RoleBasedAccessController>>, ErrorWebRouteInterceptor.Configurer<ExchangeContext> {
 
 	private final LDAPClient ldapClient;
 	private final JWSService jwsService;
@@ -81,7 +80,7 @@ public class SecurityConfigurer implements WebRouteInterceptor.Configurer<Interc
 	}
 
 	@Override
-	public WebRouteInterceptor<InterceptingSecurityContext<LDAPIdentity, RoleBasedAccessController>> configure(WebRouteInterceptor<InterceptingSecurityContext<LDAPIdentity, RoleBasedAccessController>> interceptors) {
+	public WebRouteInterceptor<SecurityContext.Intercepted<LDAPIdentity, RoleBasedAccessController>> configure(WebRouteInterceptor<SecurityContext.Intercepted<LDAPIdentity, RoleBasedAccessController>> interceptors) {
 		return interceptors
 			.intercept()                                                                                  // 1
 				.path("/")
@@ -92,7 +91,7 @@ public class SecurityConfigurer implements WebRouteInterceptor.Configurer<Interc
 				.path("/logout")
 				.interceptors(List.of(
 					SecurityInterceptor.of(                                                               // 2
-						new CookieTokenCredentialsExtractor(),                                            // 3
+						new CookieTokenCredentialsExtractor<>(),                                          // 3
 						new JWSAuthenticator<>(                                                           // 4
 							this.jwsService,
 							LDAPAuthentication.class
@@ -123,7 +122,7 @@ public class SecurityConfigurer implements WebRouteInterceptor.Configurer<Interc
 				.path("/login")
 				.method(Method.POST)
 				.handler(new LoginActionHandler<>(                                                                                       // 3
-					new FormCredentialsExtractor(),                                                                                      // 4
+					new FormCredentialsExtractor<>(),                                                                                    // 4
 					new LDAPAuthenticator(this.ldapClient, "dc=inverno,dc=io")                                                           // 5
 						.failOnDenied()                                                                                                  // 6
 						.flatMap(authentication -> this.jwsService.builder(LDAPAuthentication.class) // 7
